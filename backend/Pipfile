@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[scripts]
+dev = "sh -c 'FLASK_APP=app FLASK_DEBUG=1 FLASK_ENV=development flask run'"
+prod = "gunicorn --workers 4 wsgi:application --bind 0.0.0.0:80 --log-syslog --log-level DEBUG"
+test = "pytest"
+
+[packages]
+flask = "*"
+gunicorn = "*"
+flask-sqlalchemy = "*"
+requests = "*"
+flask_cors = "*"
+pymysql = "*"
+marshmallow = "*"
+pyjwt = "*"
+
+[dev-packages]
+pytest = "*"
+python-dateutil = "*"
+
+[requires]
+python_version = "3.7"

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Profile</title>
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css"
+              integrity="sha256-zuYfqYVhondYLhMhEA58/2PA/prdFq3gT72DxNwSD4M="
+              crossorigin="anonymous"/>
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.css"
+              integrity="sha256-WwAfhb7lVhl1iOpheVulhivZXFmNL6PlUjOCzRBWEl8="
+              crossorigin="anonymous"/>
+        <link href="{{ url_for('static',filename='css/sb-admin.css') }}" rel="stylesheet">
+    </head>
+    <body>
+        {% include "navigation.html" %}
+        <div id="wrapper">
+            <div id="content-wrapper">
+                <div class="container-fluid">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="form-group">
+                                    <div class="alert alert-{{ category }}"><span
+                                            class="fa fa-info-circle"></span> {{ message }}</div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <div class="card mb-3 mx-auto">
+                        <div class="card-header">
+                            <i class="fas fa-user"></i>
+                            Profile
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                {% if data %}
+                                <input name="id" style="display: none;" value="{{ data['publicId'] }}" readonly>
+                                <div class="form-group">
+                                    <div class="form-label-group">
+                                        <input type="text" id="profileUsername" disabled
+                                               class="form-control" placeholder="Username" value="{{ data['username'] }}">
+                                        <label for="profileUsername">Username</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label-group">
+                                        <input type="text" id="profileDisplayName"
+                                               class="form-control" name="displayName" placeholder="Display Name" value="{{ data['displayName'] }}">
+                                        <label for="profileDisplayName">Display Name</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label-group">
+                                        <input type="text" id="profileRole" disabled
+                                               class="form-control" placeholder="Role" value="{{ data['role']['description'] }}">
+                                        <label for="profileRole">Role</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label-group">
+                                        <input type="text" id="profileLastLogin" disabled
+                                               class="form-control" placeholder="Last Login" value="{{ data['lastLogin'] }}">
+                                        <label for="profileLastLogin">Last Login</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label-group">
+                                        <input type="text" id="profileCreated" disabled
+                                               class="form-control" placeholder="Created" value="{{ data['created'] }}">
+                                        <label for="profileCreated">Created</label>
+                                    </div>
+                                </div>
+                                <div align="right" class="form-group">
+                                    <button class="btn btn-primary" type="button" data-target="#modalChangePassword" data-toggle="modal">Change Password</button>
+                                    <button class="btn btn-primary" name="action" value="modifyProfile" type="submit">Save</button>
+                                </div>
+                                <!-- Modal: Change Password -->
+                                <div class="modal fade" id="modalChangePassword">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Change Password</h5>
+                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">×</span>
+                                                </button>
+                                            </div>
+                                            <form method="POST">
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input type="password" id="changePassword1" name="password"
+                                                                   class="form-control" placeholder="Password">
+                                                            <label for="changePassword1">Password</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input type="password" id="changePassword2" name="password2"
+                                                                   class="form-control" placeholder="Password (again)">
+                                                            <label for="changePassword2">Password (again)</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                    <button class="btn btn-primary" name="action" value="changePassword"
+                                                            type="submit">Change Password</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"
+                integrity="sha256-H3cjtrm/ztDeuhCN9I4yh4iN2Ybx/y1RM7rMmAesA0k="
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap.js"
+                integrity="sha256-tJIoHA64cNe60LQ0mux9ILw+9cLD+RobM7arU7vNlJk="
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.js"
+                integrity="sha256-BFIKaFl5uYR8kP6wcRxaAqJpfZfC424TBccBBVjVzuY="
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"
+                integrity="sha256-fzFFyH01cBVPYzl16KT40wqjhgPtq6FFUB6ckN2+GGw="
+                crossorigin="anonymous"></script>
+    </body>
+</html>
