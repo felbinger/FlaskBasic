@@ -23,9 +23,11 @@ class ChangePasswordForm(FlaskForm):
 @require_login
 @profile.route('/profile/<string:public_id>', methods=['GET', 'POST'])
 def account(public_id):
+    """
     forms = dict()
     forms['modifyProfile'] = ProfileForm
     forms['changePassword'] = ChangePasswordForm
+    """
     header = {'Access-Token': session.get('Access-Token')}
     if request.method == 'POST':
         if request.form is not None:
