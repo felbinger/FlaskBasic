@@ -5,7 +5,7 @@ from flask_cors import CORS
 from .api import UserResource, RoleResource, AuthResource, VerificationResource
 from .db import db
 from .config import ProductionConfig, DevelopmentConfig
-from .views import default
+from .views import default, admin, profile
 
 
 def create_app(testing_config=None) -> Flask:
@@ -39,6 +39,8 @@ def create_app(testing_config=None) -> Flask:
 
     # register views
     app.register_blueprint(default)
+    app.register_blueprint(profile)
+    app.register_blueprint(admin)
 
     return app
 
