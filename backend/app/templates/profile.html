@@ -30,99 +30,109 @@
                             {% endfor %}
                         {% endif %}
                     {% endwith %}
-                    <div class="card mb-3 mx-auto">
-                        <div class="card-header">
-                            <i class="fas fa-user"></i>
-                            Profile
-                        </div>
-                        <div class="card-body">
-                            <form method="POST">
-                                {% if data %}
-                                <input name="id" style="display: none;" value="{{ data['publicId'] }}" readonly>
-                                <div class="form-group">
-                                    <div class="form-label-group">
-                                        <input type="text" id="profileUsername" disabled
-                                               class="form-control" placeholder="Username" value="{{ data['username'] }}">
-                                        <label for="profileUsername">Username</label>
-                                    </div>
+                    <div class="row">
+                        <div class="offset-md-3 col-md-6">
+                            <div class="card mb-3 mx-auto">
+                                <div class="card-header">
+                                    <i class="fas fa-user"></i>
+                                    Profile
                                 </div>
-                                <div class="form-group">
-                                    <div class="form-label-group">
-                                        <input type="text" id="profileDisplayName"
-                                               class="form-control" name="displayName" placeholder="Display Name" value="{{ data['displayName'] }}">
-                                        <label for="profileDisplayName">Display Name</label>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-label-group">
-                                        <input type="email" id="profileEMail"
-                                               class="form-control" name="email" placeholder="E-Mail Address" value="{{ data['email'] }}">
-                                        <label for="profileEMail">E-Mail Address</label>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-label-group">
-                                        <input type="text" id="profileRole" disabled
-                                               class="form-control" placeholder="Role" value="{{ data['role']['description'] }}">
-                                        <label for="profileRole">Role</label>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-label-group">
-                                        <input type="text" id="profileLastLogin" disabled
-                                               class="form-control" placeholder="Last Login" value="{{ data['lastLogin'] }}">
-                                        <label for="profileLastLogin">Last Login</label>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-label-group">
-                                        <input type="text" id="profileCreated" disabled
-                                               class="form-control" placeholder="Created" value="{{ data['created'] }}">
-                                        <label for="profileCreated">Created</label>
-                                    </div>
-                                </div>
-                                <div align="right" class="form-group">
-                                    <button class="btn btn-primary" type="button" data-target="#modalChangePassword" data-toggle="modal">Change Password</button>
-                                    <button class="btn btn-primary" name="action" value="modifyProfile" type="submit">Save</button>
-                                </div>
-                                <!-- Modal: Change Password -->
-                                <div class="modal fade" id="modalChangePassword">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Change Password</h5>
-                                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
+                                <div class="card-body">
+                                    <form method="POST">
+                                        {% if data %}
+                                        <input name="id" style="display: none;" value="{{ data['publicId'] }}" readonly>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <div class="form-label-group">
+                                                    <input type="text" id="profileUsername" disabled
+                                                           class="form-control" placeholder="Username" value="{{ data['username'] }}">
+                                                    <label for="profileUsername">Username</label>
+                                                </div>
                                             </div>
-                                            <form method="POST">
-                                                <div class="modal-body">
-                                                    <div class="form-group">
-                                                        <div class="form-label-group">
-                                                            <input type="password" id="changePassword1" name="password"
-                                                                   class="form-control" placeholder="Password">
-                                                            <label for="changePassword1">Password</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <div class="form-label-group">
-                                                            <input type="password" id="changePassword2" name="password2"
-                                                                   class="form-control" placeholder="Password (again)">
-                                                            <label for="changePassword2">Password (again)</label>
-                                                        </div>
-                                                    </div>
+                                            <div class="col-md-6 form-group">
+                                                <div class="form-label-group">
+                                                    <input type="text" id="profileDisplayName"
+                                                           class="form-control" name="displayName" placeholder="Display Name" value="{{ data['displayName'] }}">
+                                                    <label for="profileDisplayName">Display Name</label>
                                                 </div>
-                                                <div class="modal-footer">
-                                                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                                    <button class="btn btn-primary" name="action" value="changePassword"
-                                                            type="submit">Change Password</button>
-                                                </div>
-                                            </form>
+                                            </div>
                                         </div>
-                                    </div>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <div class="form-label-group">
+                                                    <input type="email" id="profileEMail"
+                                                           class="form-control" name="email" placeholder="E-Mail Address" value="{{ data['email'] }}">
+                                                    <label for="profileEMail">E-Mail Address</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <div class="form-label-group">
+                                                    <input type="text" id="profileRole" disabled
+                                                           class="form-control" placeholder="Role" value="{{ data['role']['description'] }}">
+                                                    <label for="profileRole">Role</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 form-group">
+                                                <div class="form-label-group">
+                                                    <input type="text" id="profileLastLogin" disabled
+                                                           class="form-control" placeholder="Last Login" value="{{ data['lastLogin'] }}">
+                                                    <label for="profileLastLogin">Last Login</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 form-group">
+                                                <div class="form-label-group">
+                                                    <input type="text" id="profileCreated" disabled
+                                                           class="form-control" placeholder="Created" value="{{ data['created'] }}">
+                                                    <label for="profileCreated">Created</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div align="right" class="form-group">
+                                            <button class="btn btn-primary" type="button" data-target="#modalChangePassword" data-toggle="modal">Change Password</button>
+                                            <button class="btn btn-primary" name="action" value="modifyProfile" type="submit">Save</button>
+                                        </div>
+                                        <!-- Modal: Change Password -->
+                                        <div class="modal fade" id="modalChangePassword">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Change Password</h5>
+                                                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">×</span>
+                                                        </button>
+                                                    </div>
+                                                    <form method="POST">
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <div class="form-label-group">
+                                                                    <input type="password" id="changePassword1" name="password"
+                                                                           class="form-control" placeholder="Password">
+                                                                    <label for="changePassword1">Password</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="form-label-group">
+                                                                    <input type="password" id="changePassword2" name="password2"
+                                                                           class="form-control" placeholder="Password (again)">
+                                                                    <label for="changePassword2">Password (again)</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                            <button class="btn btn-primary" name="action" value="changePassword"
+                                                                    type="submit">Change Password</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {% endif %}
                                 </div>
-                            </form>
-                            {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>

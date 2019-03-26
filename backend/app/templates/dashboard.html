@@ -30,89 +30,97 @@
                             {% endfor %}
                         {% endif %}
                     {% endwith %}
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="fas fa-user"></i>
-                            Accounts
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: center;">Username</th>
-                                            <th style="text-align: center;">E-Mail Adress</th>
-                                            <th style="text-align: center;">Display Name</th>
-                                            <th style="text-align: center;">Role</th>
-                                            <th style="text-align: center;">Last Login</th>
-                                            <th style="text-align: center;">Created</th>
-                                            <td class="no-sort" style="text-align: center;">
-                                                <a data-target="#modalCreateAccount" data-toggle="modal"
-                                                   style="cursor: pointer; color: black;">
-                                                    <i class="fas fa-plus"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% if data['accounts'] %}
-                                        {% for entry in data['accounts'] %}
-                                            <tr class="odd gradeX">
-                                                <td>{{ entry['username'] }}</td>
-                                                <td>{{ entry['email'] }}</td>
-                                                <td>{{ entry['displayName'] }}</td>
-                                                <td>{{ entry['role']['description'] }}</td>
-                                                <td>{{ entry['lastLogin'] or "Never" }}</td>
-                                                <td>{{ entry['created'] }}</td>
-                                                <td align="center">
-                                                    <a style="color: black;" onclick='openModalModifyAccount({{ entry|tojson }})'>
-                                                        <i class="fas fa-cog"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                        {% endif %}
-                                    </tbody>
-                                </table>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <i class="fas fa-user"></i>
+                                    Accounts
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="accountTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: center;">Username</th>
+                                                    <th style="text-align: center;">E-Mail Adress</th>
+                                                    <th style="text-align: center;">Display Name</th>
+                                                    <th style="text-align: center;">Role</th>
+                                                    <th style="text-align: center;">Last Login</th>
+                                                    <th style="text-align: center;">Created</th>
+                                                    <td class="no-sort" style="text-align: center;">
+                                                        <a data-target="#modalCreateAccount" data-toggle="modal"
+                                                           style="cursor: pointer; color: black;">
+                                                            <i class="fas fa-plus"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if data['accounts'] %}
+                                                {% for entry in data['accounts'] %}
+                                                    <tr class="odd gradeX">
+                                                        <td>{{ entry['username'] }}</td>
+                                                        <td>{{ entry['email'] }}</td>
+                                                        <td>{{ entry['displayName'] }}</td>
+                                                        <td>{{ entry['role']['description'] }}</td>
+                                                        <td>{{ entry['lastLogin'] or "Never" }}</td>
+                                                        <td>{{ entry['created'] }}</td>
+                                                        <td align="center">
+                                                            <a style="color: black;" onclick='openModalModifyAccount({{ entry|tojson }})'>
+                                                                <i class="fas fa-cog"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <i class="fas fa-user"></i>
-                            Roles
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: center;">Name</th>
-                                            <th style="text-align: center;">Description</th>
-                                            <td class="no-sort" style="text-align: center;">
-                                                <a data-target="#modalCreateRole" data-toggle="modal"
-                                                   style="cursor: pointer; color: black;">
-                                                    <i class="fas fa-plus"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% if data['roles'] %}
-                                        {% for entry in data['roles'] %}
-                                            <tr class="odd gradeX">
-                                                <td>{{ entry['name'] }}</td>
-                                                <td>{{ entry['description'] }}</td>
-                                                <td align="center">
-                                                    <a style="color: black;" onclick='openModalModifyRole({{ entry|tojson }})'>
-                                                        <i class="fas fa-cog"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                        {% endif %}
-                                    </tbody>
-                                </table>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <i class="fas fa-user"></i>
+                                    Roles
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="roleTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: center;">Name</th>
+                                                    <th style="text-align: center;">Description</th>
+                                                    <td class="no-sort" style="text-align: center;">
+                                                        <a data-target="#modalCreateRole" data-toggle="modal"
+                                                           style="cursor: pointer; color: black;">
+                                                            <i class="fas fa-plus"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if data['roles'] %}
+                                                {% for entry in data['roles'] %}
+                                                    <tr class="odd gradeX">
+                                                        <td>{{ entry['name'] }}</td>
+                                                        <td>{{ entry['description'] }}</td>
+                                                        <td align="center">
+                                                            <a style="color: black;" onclick='openModalModifyRole({{ entry|tojson }})'>
+                                                                <i class="fas fa-cog"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -366,7 +374,13 @@
                 crossorigin="anonymous"></script>
         <script>
             $(document).ready(function () {
-                $('#dataTable').DataTable({
+                $('#accountTable').DataTable({
+                    "columnDefs": [{
+                        "targets": 'no-sort',
+                        "orderable": false,
+                    }]
+                });
+                $('#roleTable').DataTable({
                     "columnDefs": [{
                         "targets": 'no-sort',
                         "orderable": false,
