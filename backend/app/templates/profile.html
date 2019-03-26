@@ -40,52 +40,64 @@
                                 <div class="card-body">
                                     <form method="POST">
                                         {% if data %}
-                                        <input name="id" style="display: none;" value="{{ data['publicId'] }}" readonly>
+                                        <input name="id" type="hidden" value="{{ data['publicId'] }}" readonly>
                                         <div class="row">
-                                            <div class="col-md-6 form-group">
-                                                <div class="form-label-group">
-                                                    <input type="text" id="profileUsername" disabled
-                                                           class="form-control" placeholder="Username" value="{{ data['username'] }}">
-                                                    <label for="profileUsername">Username</label>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <div class="form-label-group">
+                                                        <input type="text" id="profileUsername" disabled
+                                                               class="form-control" placeholder="Username" value="{{ data['username'] }}">
+                                                        <label for="profileUsername">Username</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 form-group">
-                                                <div class="form-label-group">
-                                                    <input type="text" id="profileDisplayName"
-                                                           class="form-control" name="displayName" placeholder="Display Name" value="{{ data['displayName'] }}">
-                                                    <label for="profileDisplayName">Display Name</label>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <div class="form-label-group">
+                                                        <input type="text" id="profileDisplayName"
+                                                               class="form-control" name="displayName" placeholder="Display Name" value="{{ data['displayName'] }}">
+                                                        <label for="profileDisplayName">Display Name</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-6 form-group">
-                                                <div class="form-label-group">
-                                                    <input type="email" id="profileEMail"
-                                                           class="form-control" name="email" placeholder="E-Mail Address" value="{{ data['email'] }}">
-                                                    <label for="profileEMail">E-Mail Address</label>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <div class="form-label-group">
+                                                        <input type="email" id="profileEMail"
+                                                               class="form-control" name="email" placeholder="E-Mail Address" value="{{ data['email'] }}">
+                                                        <label for="profileEMail">E-Mail Address</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 form-group">
-                                                <div class="form-label-group">
-                                                    <input type="text" id="profileRole" disabled
-                                                           class="form-control" placeholder="Role" value="{{ data['role']['description'] }}">
-                                                    <label for="profileRole">Role</label>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <div class="form-label-group">
+                                                        <input type="text" id="profileRole" disabled
+                                                               class="form-control" placeholder="Role" value="{{ data['role']['description'] }}">
+                                                        <label for="profileRole">Role</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-6 form-group">
-                                                <div class="form-label-group">
-                                                    <input type="text" id="profileLastLogin" disabled
-                                                           class="form-control" placeholder="Last Login" value="{{ data['lastLogin'] }}">
-                                                    <label for="profileLastLogin">Last Login</label>
+                                            <div class="col-md-6 ">
+                                                <div class="form-group">
+                                                    <div class="form-label-group">
+                                                        <input type="text" id="profileLastLogin" disabled
+                                                               class="form-control" placeholder="Last Login" value="{{ data['lastLogin'] }}">
+                                                        <label for="profileLastLogin">Last Login</label>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6 form-group">
-                                                <div class="form-label-group">
-                                                    <input type="text" id="profileCreated" disabled
-                                                           class="form-control" placeholder="Created" value="{{ data['created'] }}">
-                                                    <label for="profileCreated">Created</label>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <div class="form-label-group">
+                                                        <input type="text" id="profileCreated" disabled
+                                                               class="form-control" placeholder="Created" value="{{ data['created'] }}">
+                                                        <label for="profileCreated">Created</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
