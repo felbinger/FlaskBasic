@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
+from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
-from hashlib import sha512
 from datetime import datetime
 
 from app.db import db
@@ -22,7 +22,7 @@ class User(db.Model):
     role = db.relationship('Role', backref=db.backref('users', lazy=True))
 
     def __init__(self, *args, **kwargs):
-        kwargs['password'] = sha512(kwargs['password'].encode()).hexdigest()
+        kwargs['password'] = generate_password_hash(password, method='sha512')
         super().__init__(*args, **kwargs, public_id=str(uuid4()), verified=False, created=datetime.utcnow())
 
     def jsonify(self):
@@ -38,4 +38,4 @@ class User(db.Model):
         }
 
     def verify_password(self, password):
-        return self.password == sha512(password.encode()).hexdigest()
+        return check_password_hash(self.password, password)
