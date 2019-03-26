@@ -35,8 +35,10 @@ def create_dummy_admin(app, client, name='test'):
             user = User(
                 username=name,
                 password=name,
+                email=f'{name}@{name}.com',
                 role=role
             )
+        user.verified = True
         db.session.add(role)
         db.session.add(user)
         db.session.commit()
@@ -55,9 +57,11 @@ def create_dummy_user(app, client, name='test'):
         if not user:
             user = User(
                 username=name,
+                email=f'{name}@{name}.com',
                 password=name,
                 role=role
             )
+        user.verified = True
         db.session.add(role)
         db.session.add(user)
         db.session.commit()
@@ -75,10 +79,12 @@ def get_admin_token(app, client):
         if not user:
             user = User(
                 username='test',
+                email='test@test.de',
                 password='test',
                 role=role
             )
         db = client.db
+        user.verified = True
         db.session.add(role)
         db.session.add(user)
         db.session.commit()
@@ -98,10 +104,12 @@ def get_user_token(app, client):
         if not user:
             user = User(
                 username='test',
+                email='test@test.com',
                 password='test',
                 role=role
             )
         db = client.db
+        user.verified = True
         db.session.add(role)
         db.session.add(user)
         db.session.commit()
@@ -117,3 +125,15 @@ def create_dummy_role(app, client, name):
         db.session.add(role)
         db.session.commit()
     return role
+
+
+# generate a session (token in a cookie) for an non admin user
+def generate_user_session(app, client):
+    with app.app_context():
+        create_dummy_user(app, client)
+        resp = client.post('/login', data={'username': 'test', 'password': 'test'})
+        assert resp.status_code == 302  # expect redirect to another page
+        assert 'session=' in resp.headers['Set-Cookie']
+        session_cookie = resp.headers['Set-Cookie'].rsplit("=")[1].rsplit(";")[0]
+        return str(session_cookie)
+

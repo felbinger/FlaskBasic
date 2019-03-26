@@ -55,6 +55,13 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="form-label-group">
+                                        <input type="email" id="profileEMail"
+                                               class="form-control" name="email" placeholder="E-Mail Address" value="{{ data['email'] }}">
+                                        <label for="profileEMail">E-Mail Address</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label-group">
                                         <input type="text" id="profileRole" disabled
                                                class="form-control" placeholder="Role" value="{{ data['role']['description'] }}">
                                         <label for="profileRole">Role</label>

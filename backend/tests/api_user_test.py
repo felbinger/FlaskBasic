@@ -9,9 +9,9 @@ def test_create_user(app, client):
     token = get_admin_token(app, client)
     data = {'username': 'qwerty',
             'password': 'i7Co8yvFWDGZfNMUQtcg',
+            'email': 'test@test.com',
             'role': 'admin'}
     resp = client.post('/api/users', headers={'Access-Token': token}, json=data)
-    print(resp.data)
     assert resp.status_code == 201
     assert json.loads(resp.data.decode()).get('data').get('username') == data.get('username')
     assert json.loads(resp.data.decode()).get('data').get('role').get('name') == data.get('role')
@@ -24,6 +24,7 @@ def test_create_user_error_role(app, client):
     token = get_admin_token(app, client)
     data = {'username': 'qwerty',
             'password': 'i7Co8yvFWDGZfNMUQtcg',
+            'email': 'test@test.com',
             'role': 'invalid_role'}
     resp = client.post('/api/users', headers={'Access-Token': token}, json=data)
     assert resp.status_code == 404
@@ -35,6 +36,7 @@ def test_create_two_equal_usernames(app, client):
         token = get_admin_token(app, client)
         data = {'username': 'test',
                 'password': 'i7Co8yvFWDGZfNMUQtcg',
+            'email': 'test@test.com',
                 'role': 'user'}
         resp = client.post('/api/users', headers={'Access-Token': token}, json=data)
         assert resp.status_code == 422
@@ -60,6 +62,7 @@ def test_create_user_as_user(app, client):
     token = get_user_token(app, client)
     data = {'username': 'qwerty',
             'password': 'i7Co8yvFWDGZfNMUQtcg',
+            'email': 'test@test.com',
             'role': 'user'}
     resp = client.post('/api/users', headers={'Access-Token': token}, json=data)
     assert resp.status_code == 403
@@ -69,7 +72,7 @@ def test_create_user_as_user(app, client):
 # Admin: get user by publicId
 def test_get_user(app, client):
     with app.app_context():
-        user_id = create_dummy_admin(app=app, client=client)
+        user_id = create_dummy_admin(app=app, client=client, name='john')
         resp = client.get(f'/api/users/{user_id}', headers={'Access-Token': get_admin_token(app, client)})
         assert resp.status_code == 200
         assert json.loads(resp.data.decode()).get('data').get('publicId') == user_id
@@ -84,7 +87,7 @@ def test_get_invalid_user(app, client):
 # Admin: get all users
 def test_get_all_user(app, client):
     with app.app_context():
-        create_dummy_admin(app=app, client=client)
+        create_dummy_admin(app=app, client=client, name='jane')
         resp = client.get('/api/users', headers={'Access-Token': get_admin_token(app, client)})
         assert resp.status_code == 200
         assert len(json.loads(resp.data.decode()).get('data')) == len(User.query.all())

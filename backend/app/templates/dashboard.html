@@ -41,6 +41,7 @@
                                     <thead>
                                         <tr>
                                             <th style="text-align: center;">Username</th>
+                                            <th style="text-align: center;">E-Mail Adress</th>
                                             <th style="text-align: center;">Display Name</th>
                                             <th style="text-align: center;">Role</th>
                                             <th style="text-align: center;">Last Login</th>
@@ -58,6 +59,7 @@
                                         {% for entry in data['accounts'] %}
                                             <tr class="odd gradeX">
                                                 <td>{{ entry['username'] }}</td>
+                                                <td>{{ entry['email'] }}</td>
                                                 <td>{{ entry['displayName'] }}</td>
                                                 <td>{{ entry['role']['description'] }}</td>
                                                 <td>{{ entry['lastLogin'] or "Never" }}</td>
@@ -137,6 +139,13 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <div class="form-label-group">
+                                    <input type="email" id="createAccountEMail" name="email"
+                                           class="form-control" placeholder="E-Mail" required="required">
+                                    <label for="createAccountEMail">E-Mail</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label for="createAccountRole">Role</label>
                                 <select class="form-control" name="role" id="createAccountRole">
                                 {% for role in data['roles'] %}
@@ -185,6 +194,13 @@
                                     <input type="text" id="modifyAccountDisplayName" name="displayName"
                                            class="form-control" placeholder="Display Name">
                                     <label for="modifyAccountDisplayName">Display Name</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label-group">
+                                    <input type="email" id="modifyAccountEMail" name="email"
+                                           class="form-control" placeholder="E-Mail">
+                                    <label for="modifyAccountEMail">E-Mail</label>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -362,6 +378,7 @@
                 $('#modifyAccountPublicId').val(data['publicId']);
                 $('#modifyAccountUsername').val(data['username']);
                 $("#modifyAccountDisplayName").val(data["displayName"]);
+                $("#modifyAccountEMail").val(data['email']);
                 $('select[id="modifyAccountRole"]').find('option[value="' + data['role']['name'] + '"]').attr("selected",true);
                 $('#modifyAccountCreated').val(data['created']);
                 $('#modifyAccountLastLogin').val(data['lastLogin']);

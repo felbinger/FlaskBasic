@@ -20,7 +20,8 @@ def test_create_user(app, client):
     role = Role(name='admin', description='Administrator')
     user = User(
         username='test',
-        password='testineTestHatEinPw',
+        password='passwordForTest',
+        email='test@test.com',
         role=role
     )
     with app.app_context():
@@ -31,4 +32,4 @@ def test_create_user(app, client):
 
     assert isinstance(first, User)
     assert len(UUID(first.public_id).hex) == 32
-    assert first.verify_password('testineTestHatEinPw')
+    assert first.verify_password('passwordForTest')

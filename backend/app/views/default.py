@@ -23,29 +23,36 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         if username and password:
-            token = requests.post(
+            resp = requests.post(
                 f'{request.scheme}://{request.host}{url_for("auth_api")}',
                 json={
                     'username': username,
                     'password': password
                 }
-            ).json().get('token')
-            if token:
-                session['Access-Token'] = token
+            ).json()
+            if resp.get('token'):
+                session['Access-Token'] = resp.get('token')
                 return redirect(url_for('app.views.default.index'))
             else:
-                flash('Credentials incorrect', 'danger')
+                flash(resp.get('message'), 'danger')
         else:
             flash('Missing credentials')
     return render_template('login.html')
 
 
 @require_login
-@default.route('/logout', methods=['GET'])
+@default.route('/logout')
 def logout():
     # todo contact redis server to make token invalid
     session['Access-Token'] = None
     return redirect(url_for('app.views.default.login'), code=302)
+
+
+@default.route('/verify/<token>')
+def verify(token):
+    return requests.put(
+        f'{request.scheme}://{request.host}{url_for("verify_mail_api", token=token)}'
+    ).json().get('message')
 
 
 @require_login
@@ -62,7 +69,8 @@ def account(public_id):
                     resp = requests.put(
                         f'{request.scheme}://{request.host}{url_for("user_api")}/{public_id}',
                         json={
-                            'displayName': request.form.get('displayName')
+                            'displayName': request.form.get('displayName'),
+                            'email': request.form.get('email')
                         },
                         headers=header
                     )
@@ -128,35 +136,31 @@ def dashboard():
 
             if action == 'createAccount':
                 username = request.form.get('username')
+                email = request.form.get('email')
                 password = request.form.get('password')
                 role = request.form.get('role')
 
-                if not username:
-                    flash('Unable to create account: Username cannot be emtpy!', 'danger')
+                if not username or not email or not password or not role:
+                    flash('Unable to create account! Make sure all boxes filled out!', 'danger')
                 else:
-                    if not password:
-                        flash('Unable to create account: Password cannot be emtpy!', 'danger')
+                    if len(password) < 8:
+                        flash('Password is too short!', 'danger')
                     else:
-                        if len(password) < 8:
-                            flash('Password is too short!', 'danger')
+                        resp = requests.post(
+                            f'{request.scheme}://{request.host}{url_for("user_api")}',
+                            headers=header,
+                            json={
+                                'username': username,
+                                'email': email,
+                                'password': password,
+                                'role': role
+                            }
+                        )
+                        if resp.status_code != 201:
+                            msg = resp.json().get("message")
+                            flash(f'Unable to create account: {msg}', 'danger')
                         else:
-                            if not role:
-                                flash('Unable to create account: Role cannot be emtpy!', 'danger')
-                            else:
-                                resp = requests.post(
-                                    f'{request.scheme}://{request.host}{url_for("user_api")}',
-                                    headers=header,
-                                    json={
-                                        'username': username,
-                                        'password': password,
-                                        'role': role
-                                    }
-                                )
-                                if resp.status_code != 201:
-                                    msg = resp.json().get("message")
-                                    flash(f'Unable to create account: {msg}', 'danger')
-                                else:
-                                    flash('Account has been created successfully!', 'success')
+                            flash('Account has been created successfully!', 'success')
 
             elif action == 'modifyAccount':
                 public_id = request.form.get('id')
@@ -166,6 +170,7 @@ def dashboard():
                         json={
                             'username': request.form.get('username'),
                             'displayName': request.form.get('displayName'),
+                            'email': request.form.get('email'),
                             'role': request.form.get('role')
                         },
                         headers=header

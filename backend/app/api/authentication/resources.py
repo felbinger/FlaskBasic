@@ -31,10 +31,15 @@ class AuthResource(MethodView):
 
         # Get the user object by the submitted username
         user = User.query.filter_by(username=data.get('username')).first()
-        # Check if the user exists and if the submitted password is correct
+        # Check if the user exists, if the submitted password is correct and the account (email address) is verified
         if not user or not user.verify_password(data.get('password')):
             return AuthResultSchema(
                 message='Wrong credentials',
+                status_code=401
+            ).jsonify()
+        if not user.verified:
+            return AuthResultSchema(
+                message='Unverified email address',
                 status_code=401
             ).jsonify()
 

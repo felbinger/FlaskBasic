@@ -1,6 +1,8 @@
 from flask.views import MethodView
-from flask import request
+from flask import request, current_app, url_for
+from flask_mail import Mail
 from hashlib import sha512
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature, BadSignature
 
 from app.db import db
 from ..schemas import ResultSchema, ResultErrorSchema
@@ -58,6 +60,16 @@ class UserResource(MethodView):
         user = User(**data)
         db.session.add(user)
         db.session.commit()
+
+        # generate token to verify email
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        token = s.dumps(data['email'], salt='verify-email')
+
+        # send email
+        mail = Mail(current_app)
+        verification_link = f'{request.scheme}://{request.host}{url_for("app.views.default.verify", token=token)}'
+        body = f'Hello, please click <a href="{verification_link}">here</a> to confirm your email.'
+        mail.send_message("Verify your email!", recipients=[data['email']], html=body)
 
         return ResultSchema(
             data=user.jsonify(),
@@ -135,3 +147,21 @@ class UserResource(MethodView):
                 setattr(target, key, val)
         db.session.commit()
         return ResultSchema(data=target.jsonify()).jsonify()
+
+
+class VerificationResource(MethodView):
+    def put(self, token):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            email = s.loads(token, salt='verify-email', max_age=7200)
+        except (BadSignature, SignatureExpired, BadTimeSignature):
+            return ResultErrorSchema(
+                message='Token is invalid!'
+            ).jsonify()
+        user = User.query.filter_by(email=email).first()
+        user.verified = True
+        db.session.commit()
+        return ResultErrorSchema(
+            message='E-Mail verified successfully!',
+            status_code=200
+        ).jsonify()
