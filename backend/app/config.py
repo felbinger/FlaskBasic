@@ -23,6 +23,8 @@ class ProductionConfig(Config):
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_SENDER')
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_USERNAME')
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
 
     # encryption method (unencrypted, starttls or ssl)
     enc = os.environ.get('MAIL_ENCRYPTION') or 'unencrypted'

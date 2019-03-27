@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField
-from wtforms.validators import InputRequired
+from wtforms.validators import InputRequired, Length
 import requests
 
 from .utils import require_login, require_logout
@@ -10,8 +10,9 @@ auth = Blueprint(__name__, 'auth')
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired()])
-    password = PasswordField('Password', validators=[InputRequired()])
+    username = StringField('Username', validators=[InputRequired(), Length(min=1, max=80)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=200)])
+    recaptcha = RecaptchaField()
 
 
 class PasswordResetForm(FlaskForm):
@@ -37,7 +38,7 @@ def login():
             else:
                 flash(resp.get('message'), 'danger')
         else:
-            flash('Missing credentials')
+            flash('Missing credentials', 'danger')
     return render_template('login.html', form=form)
 
 
