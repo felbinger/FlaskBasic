@@ -46,7 +46,7 @@ def login():
 def logout():
     # todo contact redis server to make token invalid
     session['Access-Token'] = None
-    return redirect(url_for('app.views.default.login'), code=302)
+    return redirect(url_for('app.views.auth.login'), code=302)
 
 
 @auth.route('/verify/<string:token>')
@@ -69,7 +69,7 @@ def request_password_reset():
         if resp.status_code != 200:
             flash('Unknown error', 'danger')
         else:
-            return redirect(url_for('app.views.default.login')), 302
+            return redirect(url_for('app.views.auth.login')), 302
     return render_template('resetPassword.html', form=form)
 
 
