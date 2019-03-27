@@ -73,7 +73,7 @@ class UserResource(MethodView):
 
         # send email
         mail = Mail(current_app)
-        verification_link = f'{request.scheme}://{request.host}{url_for("app.views.default.verify", token=token)}'
+        verification_link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
         body = f'Hello, please click <a href="{verification_link}">here</a> to confirm your email.'
         mail.send_message("Verify your email!", recipients=[data['email']], html=body)
 
@@ -193,7 +193,7 @@ class ResetResource(MethodView):
         if user:
             # send email
             mail = Mail(current_app)
-            link = f'{request.scheme}://{request.host}{url_for("app.views.default.confirm_password_reset", token=token)}'
+            link = f'{request.scheme}://{request.host}{url_for("app.views.auth.confirm_password_reset", token=token)}'
             body = f'Hello, if you want to reset your password, click <a href="{link}">here</a>.\n' + \
                    f'If you haven\'t requested a password reset, just ignore this message.'
             mail.send_message("Password Reset!", recipients=[data['email']], html=body)

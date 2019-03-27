@@ -15,12 +15,12 @@ def require_login(view_func):
             )
             if resp.status_code != 200:
                 # invalid token
-                return redirect(url_for('app.views.default.login'))
+                return redirect(url_for('app.views.auth.login'))
             else:
                 # token is valid
                 return view_func(*args, **kwargs)
         else:
-            return redirect(url_for('app.views.default.login'))
+            return redirect(url_for('app.views.auth.login'))
     return wrapper
 
 
