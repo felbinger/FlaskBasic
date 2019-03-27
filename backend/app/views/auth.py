@@ -1,0 +1,80 @@
+from flask import Blueprint, render_template, request, session, redirect, url_for, flash
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField
+from wtforms.validators import InputRequired
+import requests
+
+from .utils import require_login, require_logout
+
+auth = Blueprint(__name__, 'auth')
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+
+
+class PasswordResetForm(FlaskForm):
+    email = StringField('E-Mail', validators=[InputRequired()])
+
+
+@auth.route('/login', methods=['GET', 'POST'])
+@require_logout
+def login():
+    form = LoginForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            resp = requests.post(
+                f'{request.scheme}://{request.host}{url_for("auth_api")}',
+                json={
+                    'username': form.username.data,
+                    'password': form.password.data
+                }
+            ).json()
+            if resp.get('token'):
+                session['Access-Token'] = resp.get('token')
+                return redirect(url_for('app.views.default.index'))
+            else:
+                flash(resp.get('message'), 'danger')
+        else:
+            flash('Missing credentials')
+    return render_template('login.html', form=form)
+
+
+@require_login
+@auth.route('/logout')
+def logout():
+    # todo contact redis server to make token invalid
+    session['Access-Token'] = None
+    return redirect(url_for('app.views.default.login'), code=302)
+
+
+@auth.route('/verify/<string:token>')
+def verify(token):
+    return requests.put(
+        f'{request.scheme}://{request.host}{url_for("verify_mail_api", token=token)}'
+    ).json().get('message')
+
+
+@auth.route('/reset/request', methods=['GET', 'POST'])
+def request_password_reset():
+    form = PasswordResetForm()
+    if request.method == 'POST':
+        resp = requests.post(
+            f'{request.scheme}://{request.host}{url_for("password_reset_api")}',
+            json={
+                'email': form.email.data
+            }
+        )
+        if resp.status_code != 200:
+            flash('Unknown error', 'danger')
+        else:
+            return redirect(url_for('app.views.default.login')), 302
+    return render_template('resetPassword.html', form=form)
+
+
+@auth.route('/reset/confirm/<string:token>')
+def confirm_password_reset(token):
+    return requests.put(
+        f'{request.scheme}://{request.host}{url_for("password_reset_api", token=token)}'
+    ).json().get('message')

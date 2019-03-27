@@ -28,3 +28,7 @@ class DaoUpdateUserSchema(Schema):
     email = fields.Email([validate_spaces])
     password = fields.Str(validate=[validate.Length(min=8, max=200)])
     role = fields.Str()
+
+
+class DaoRequestPasswordResetSchema(Schema):
+    email = fields.Email([validate_spaces], required=True)
