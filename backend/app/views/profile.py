@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, url_for, flash
+from flask import Blueprint, render_template, request, session, url_for, flash, send_from_directory
 # from flask_wtf import FlaskForm
 # from wtforms import StringField, PasswordField
 # from wtforms.validators import InputRequired
@@ -93,3 +93,13 @@ def account(public_id):
         ).json().get('data')
 
     return render_template('profile.html', data=data, role=role)
+
+
+# todo redesign
+@require_login
+@profile.route('/picture/<string:public_id>')
+def profile_picture(public_id):
+    pic = f'img/profile/{public_id}.png'
+    if requests.get(f'{request.scheme}://{request.host}/static/{pic}').status_code != 200:
+        pic = f'img/profile/blank.png'
+    return send_from_directory('static', pic)

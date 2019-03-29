@@ -12,11 +12,11 @@ auth = Blueprint(__name__, 'auth')
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=80)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=200)])
-    recaptcha = RecaptchaField()
 
 
 class PasswordResetForm(FlaskForm):
     email = StringField('E-Mail', validators=[InputRequired()])
+    recaptcha = RecaptchaField()
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -38,7 +38,7 @@ def login():
             else:
                 flash(resp.get('message'), 'danger')
         else:
-            flash('Missing credentials', 'danger')
+            flash('Invalid Credentials!', 'danger')
     return render_template('login.html', form=form)
 
 

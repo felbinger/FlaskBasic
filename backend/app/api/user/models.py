@@ -22,7 +22,7 @@ class User(db.Model):
     role = db.relationship('Role', backref=db.backref('users', lazy=True))
 
     def __init__(self, *args, **kwargs):
-        kwargs['password'] = generate_password_hash(password, method='sha512')
+        kwargs['password'] = generate_password_hash(kwargs['password'], method='sha512')
         super().__init__(*args, **kwargs, public_id=str(uuid4()), verified=False, created=datetime.utcnow())
 
     def jsonify(self):
@@ -34,7 +34,7 @@ class User(db.Model):
             'verified': self.verified,
             'created': self.created.strftime("%d.%m.%Y %H:%M:%S"),
             'lastLogin': self.last_login.strftime("%d.%m.%Y %H:%M:%S") if self.last_login else None,
-            'role': self.role.jsonify(),
+            'role': self.role.jsonify()
         }
 
     def verify_password(self, password):
