@@ -14,7 +14,7 @@ class User(db.Model):
     displayName = Column('displayName', String(128), unique=True, nullable=True)
     email = Column('email', String(64), unique=True, nullable=False)
     verified = Column('verified', Boolean, nullable=False)
-    password = Column('password', String(512), nullable=False)
+    _password = Column('password', String(512), nullable=False)
     created = Column('created', DateTime, nullable=False)
     last_login = Column('lastLogin', DateTime)
 
@@ -38,4 +38,12 @@ class User(db.Model):
         }
 
     def verify_password(self, password):
-        return check_password_hash(self.password, password)
+        return check_password_hash(self._password, password)
+
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self._password = generate_password_hash(password, method='sha512')

@@ -100,10 +100,7 @@ class UserResource(MethodView):
                     status_code=403
                 ).jsonify()
             for key, val in data.items():
-                if key == 'password':
-                    setattr(user, key, sha512(val.encode()).hexdigest())
-                else:
-                    setattr(user, key, val)
+                setattr(user, key, val)
             db.session.commit()
             return ResultSchema(data=user.jsonify()).jsonify()
         else:
@@ -147,8 +144,6 @@ class UserResource(MethodView):
                     ).jsonify()
                 else:
                     target.role = role
-            elif key == 'password':
-                setattr(target, key, generate_password_hash(val, method='sha512'))
             else:
                 setattr(target, key, val)
         db.session.commit()
@@ -226,7 +221,7 @@ class ResetResource(MethodView):
             print(body)
 
             # update password
-            user.password = generate_password_hash(new_password, method='sha512')
+            user.password = new_password
             db.session.commit()
 
         return ResultErrorSchema(
