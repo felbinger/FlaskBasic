@@ -42,34 +42,33 @@
                                     <form method="POST">
                                     {{ forms['modifyProfile'].csrf_token }}
                                         <div class="row">
-                                            <div class="col-md-2">
-                                                <img src="/picture/{{ data['publicId'] }}"
-                                                     alt="Profile Picture" width="200" height="200">
+                                            <div class="col-lg-2">
+                                                <img class="rounded" src="/picture/{{ data['publicId'] }}" alt="Profile Picture"
+                                                     width="200" height="200">
                                                 <!-- TODO update profile picture: <input type="file">-->
-                                                <div class="my-2 custom-control custom-switch">
-                                                    {% if data['2fa'] %}
-                                                        <input type="checkbox" class="custom-control-input" name="enable_2fa" id="profile2FAEnabled" checked>
-                                                    {% else %}
-                                                        <input type="checkbox" class="custom-control-input" name="enable_2fa" id="profile2FAEnabled">
-                                                    {% endif %}
-                                                    <label class="custom-control-label" for="profile2FAEnabled">2FA enabled</label>
+                                                <div class="my-2">
+                                                    {{ render_switch_field(forms['modifyProfile'].enable_2fa, checked=data['2fa']) }}
                                                 </div>
                                             </div>
-                                            <div class="col-md-10">
-                                                {{ render_field(forms['modifyProfile'].display_name, placeholder=forms['modifyProfile'].display_name.label.text, value=data['displayName']) }}
-                                                {{ render_field(forms['modifyProfile'].email, placeholder=forms['modifyProfile'].email.label.text, value=data['email']) }}
+                                            <div class="col-lg-10">
                                                 <div class="row">
                                                     <div class="col-md-6">
-                                                        {{ render_field(forms['modifyProfile'].username, placeholder=forms['modifyProfile'].username.label.text, value=data['username'], disabled=True) }}
+                                                        {{ render_field(forms['modifyProfile'].display_name, value=data['displayName']) }}
                                                     </div>
                                                     <div class="col-md-6">
-                                                        {{ render_field(forms['modifyProfile'].role, placeholder=forms['modifyProfile'].role.label.text, value=data['role']['description'], disabled=True) }}
+                                                        {{ render_field(forms['modifyProfile'].email, value=data['email']) }}
                                                     </div>
                                                     <div class="col-md-6">
-                                                        {{ render_field(forms['modifyProfile'].last_login, placeholder=forms['modifyProfile'].last_login.label.text, value=data['lastLogin'], disabled=True) }}
+                                                        {{ render_field(forms['modifyProfile'].username, value=data['username'], disabled=True) }}
                                                     </div>
                                                     <div class="col-md-6">
-                                                        {{ render_field(forms['modifyProfile'].created, placeholder=forms['modifyProfile'].created.label.text, value=data['created'], disabled=True) }}
+                                                        {{ render_field(forms['modifyProfile'].role, value=data['role']['description'], disabled=True) }}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        {{ render_field(forms['modifyProfile'].last_login, value=data['lastLogin'], disabled=True) }}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        {{ render_field(forms['modifyProfile'].created, value=data['created'], disabled=True) }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -99,8 +98,8 @@
                     <form method="POST">
                         {{ forms['changePassword'].csrf_token }}
                         <div class="modal-body">
-                            {{ render_field(forms['changePassword'].password, placeholder=forms['changePassword'].password.label.text) }}
-                            {{ render_field(forms['changePassword'].password2, placeholder=forms['changePassword'].password2.label.text) }}
+                            {{ render_field(forms['changePassword'].password) }}
+                            {{ render_field(forms['changePassword'].password2) }}
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>

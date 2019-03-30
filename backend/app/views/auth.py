@@ -37,7 +37,6 @@ def login():
             if resp.get('message') == '2FA required':
                 return redirect(url_for('app.views.auth.get_2fa'))
             elif resp.get('token'):
-                print(resp.get('token'))
                 session['Access-Token'] = resp.get('token')
                 return redirect(url_for('app.views.default.index'))
             else:

@@ -1,67 +1,58 @@
 from flask import Blueprint, render_template, request, session, url_for, flash
-# from flask_wtf import FlaskForm
-# from wtforms import StringField, PasswordField, SelectField, HiddenField
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SelectField, BooleanField, HiddenField
+from wtforms.validators import DataRequired
 import requests
 
 from .utils import require_login, require_admin
 
 admin = Blueprint(__name__, 'admin')
 
-"""
+
 class CreateAccountForm(FlaskForm):
-    username = StringField('username')
-    email = StringField('email')
-    password = PasswordField('password')
-    role = SelectField('role')
+    username = StringField('Username', validators=[DataRequired], id='createAccountUsername')
+    email = StringField('E-Mail Address', validators=[DataRequired], id='createAccountEmail')
+    password = PasswordField('Password', validators=[DataRequired], id='createAccountPassword')
+    role = SelectField('Role', validators=[DataRequired], id='createAccountRole')
 
 
 class ModifyAccountForm(FlaskForm):
-    public_id = HiddenField('id')
-    username = StringField('username')
-    email = StringField('email')
-    display_name = StringField('displayName')
-    role = SelectField('role')
+    public_id = HiddenField(id='modifyAccountPublicId')
+    username = StringField('Username', id='modifyAccountUsername')
+    display_name = StringField('Display Name', id='modifyAccountDisplayName')
+    email = StringField('E-Mail Address', id='modifyAccountEmail')
+    role = SelectField('Role', id='modifyAccountRole')
+    created = StringField('Created', id='modifyAccountCreated')
+    last_login = StringField('Last Login', id='modifyAccountLastLogin')
+    enable_2fa = BooleanField('2FA enabled', id='modifyAccount2FAEnabled')
 
 
 class ChangePasswordForm(FlaskForm):
-    public_id = HiddenField('id')
-    password = PasswordField('password')
-    password2 = PasswordField('password2')
-
-
-class DeleteAccountForm(FlaskForm):
-    public_id = HiddenField('id')
+    public_id = HiddenField(id='changePasswordPublicId')
+    password = PasswordField('Password', id='changePasswordPassword')
+    password2 = PasswordField('Password (again)', id='changePasswordPasswordAgain')
 
 
 class CreateRoleForm(FlaskForm):
-    name = StringField('name')
-    description = StringField('description')
+    name = StringField('Name', validators=[DataRequired], id='createRoleName')
+    description = StringField('Description', validators=[DataRequired], id='createRoleDescription')
 
 
 class ModifyRoleForm(FlaskForm):
-    name = StringField('name')
-    description = StringField('description')
-
-
-class DeleteRoleForm(FlaskForm):
-    name = StringField('name')
-"""
+    name = StringField('Name', id='modifyRoleName', validators=[DataRequired])
+    description = StringField('Description', id='modifyRoleDescription')
 
 
 @require_login
 @require_admin
 @admin.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    """
     forms = dict()
-    forms['createAccount'] = CreateAccountForm
-    forms['modifyAccount'] = ModifyAccountForm
-    forms['changePassword'] = ChangePasswordForm
-    forms['deleteAccount'] = DeleteAccountForm
-    forms['createRole'] = CreateRoleForm
-    forms['modifyRole'] = ModifyRoleForm
-    forms['deleteRole'] = DeleteRoleForm
-    """
+    forms['createAccount'] = CreateAccountForm()
+    forms['modifyAccount'] = ModifyAccountForm()
+    forms['changePassword'] = ChangePasswordForm()
+    forms['createRole'] = CreateRoleForm()
+    forms['modifyRole'] = ModifyRoleForm()
     header = {'Access-Token': session.get('Access-Token')}
     if request.method == 'POST':
         if request.form is not None:
@@ -72,7 +63,6 @@ def dashboard():
                 email = request.form.get('email')
                 password = request.form.get('password')
                 role = request.form.get('role')
-
                 if not username or not email or not password or not role:
                     flash('Unable to create account! Make sure all boxes filled out!', 'danger')
                 else:
@@ -96,13 +86,14 @@ def dashboard():
                             flash('Account has been created successfully!', 'success')
 
             elif action == 'modifyAccount':
-                public_id = request.form.get('id')
+                public_id = request.form.get('public_id')
                 if public_id:
                     resp = requests.put(
                         f'{request.scheme}://{request.host}{url_for("user_api")}/{public_id}',
                         json={
+                            '2fa': False if not request.form.get('enable_2fa') else True,
                             'username': request.form.get('username'),
-                            'displayName': request.form.get('displayName'),
+                            'displayName': request.form.get('display_name'),
                             'email': request.form.get('email'),
                             'role': request.form.get('role')
                         },
@@ -116,7 +107,7 @@ def dashboard():
                     flash('You need to provide an uuid to update an account!', 'danger')
 
             elif action == 'changePassword':
-                public_id = request.form.get('id')
+                public_id = request.form.get('public_id')
                 password = request.form.get('password')
                 if public_id:
                     if password == request.form.get('password2'):
@@ -140,7 +131,7 @@ def dashboard():
                     flash('You need to provide an uuid to change the password of an account!', 'danger')
 
             elif action == 'deleteAccount':
-                public_id = request.form.get('id')
+                public_id = request.form.get('public_id')
                 if public_id:
                     resp = requests.delete(
                         f'{request.scheme}://{request.host}{url_for("user_api")}/{public_id}',
@@ -221,4 +212,6 @@ def dashboard():
         f'{request.scheme}://{request.host}{url_for("role_api")}',
         headers=header
     ).json().get('data')
-    return render_template('dashboard.html', data=data, role=role), 200
+    forms['createAccount'].role.choices = [(e.get('name'), e.get('description')) for e in data['roles']]
+    forms['modifyAccount'].role.choices = [(e.get('name'), e.get('description')) for e in data['roles']]
+    return render_template('dashboard.html', data=data, role=role, forms=forms), 200

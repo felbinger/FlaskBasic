@@ -1,3 +1,4 @@
+{% from "_render_field.html" import render_field, render_select_field, render_hidden_field, render_switch_field %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -137,36 +138,12 @@
                         </button>
                     </div>
                     <form method="POST">
+                        {{ forms['createAccount'].csrf_token }}
                         <div class="modal-body">
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="text" id="createAccountUsername" name="username"
-                                           class="form-control" placeholder="Username" required="required">
-                                    <label for="createAccountUsername">Username</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="email" id="createAccountEMail" name="email"
-                                           class="form-control" placeholder="E-Mail" required="required">
-                                    <label for="createAccountEMail">E-Mail</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="createAccountRole">Role</label>
-                                <select class="form-control" name="role" id="createAccountRole">
-                                {% for role in data['roles'] %}
-                                    <option value="{{ role['name'] }}">{{ role['description'] }}</option>
-                                {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="password" id="createAccountPassword" name="password"
-                                           class="form-control" placeholder="Password" required="required">
-                                    <label for="createAccountPassword">Password</label>
-                                </div>
-                            </div>
+                            {{ render_field(forms['createAccount'].username) }}
+                            {{ render_field(forms['createAccount'].email) }}
+                            {{ render_select_field(forms['createAccount'].role) }}
+                            {{ render_field(forms['createAccount'].password) }}
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
@@ -187,70 +164,30 @@
                         </button>
                     </div>
                     <form method="POST">
-                        <input id="modifyAccountPublicId" type="hidden" name="id" readonly>
+                        <!--{{ forms['modifyAccount'].csrf_token }}-->
+                        {{ render_hidden_field(forms['modifyAccount'].public_id) }}
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <div class="form-label-group">
-                                            <input type="text" id="modifyAccountUsername" name="username"
-                                                   class="form-control" placeholder="Username" required="required">
-                                            <label for="modifyAccountUsername">Username</label>
-                                        </div>
-                                    </div>
+                                    {{ render_field(forms['modifyAccount'].username) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <div class="form-label-group">
-                                            <input type="text" id="modifyAccountDisplayName" name="displayName"
-                                                   class="form-control" placeholder="Display Name">
-                                            <label for="modifyAccountDisplayName">Display Name</label>
-                                        </div>
-                                    </div>
+                                    {{ render_field(forms['modifyAccount'].display_name) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <div class="form-label-group">
-                                            <input type="email" id="modifyAccountEMail" name="email"
-                                                   class="form-control" placeholder="E-Mail">
-                                            <label for="modifyAccountEMail">E-Mail</label>
-                                        </div>
-                                    </div>
+                                    {{ render_field(forms['modifyAccount'].email) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <select class="form-control d-inline-block" name="role" id="modifyAccountRole">
-                                        {% for role in data['roles'] %}
-                                            <option value="{{ role['name'] }}">{{ role['description'] }}</option>
-                                        {% endfor %}
-                                        </select>
-                                        <label for="modifyAccountRole">Role</label>
-                                    </div>
+                                    {{ render_select_field(forms['modifyAccount'].role) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <div class="form-label-group">
-                                            <input type="text" id="modifyAccountCreated" disabled
-                                                   class="form-control" placeholder="Created">
-                                            <label for="modifyAccountCreated">Created</label>
-                                        </div>
-                                    </div>
+                                    {{ render_field(forms['modifyAccount'].created, disabled=True) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <div class="form-label-group">
-                                            <input type="text" id="modifyAccountLastLogin" disabled
-                                                   class="form-control" placeholder="Last Login">
-                                            <label for="modifyAccountLastLogin">Last Login</label>
-                                        </div>
-                                    </div>
+                                    {{ render_field(forms['modifyAccount'].last_login, disabled=True) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="custom-control custom-switch">
-                                        <!-- todo should be editable so admins can disable 2fa (only disable) -->
-                                        <input type="checkbox" class="custom-control-input" name="2faEnabled" id="modifyAccount2FAEnabled">
-                                        <label class="custom-control-label" for="profile2FAEnabled">2FA enabled</label>
-                                    </div>
+                                    {{ render_switch_field(forms['modifyAccount'].enable_2fa) }}
                                 </div>
                             </div>
                         </div>
@@ -260,41 +197,31 @@
                             <button class="btn btn-primary" type="button" data-target="#modalChangePassword" data-toggle="modal">Change Password</button>
                             <button class="btn btn-primary" name="action" value="modifyAccount" type="submit">Save</button>
                         </div>
-                        <!-- Modal: Change Password -->
-                        <div class="modal fade" id="modalChangePassword">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Change Password</h5>
-                                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">×</span>
-                                        </button>
-                                    </div>
-                                    <form method="POST">
-                                        <div class="modal-body">
-                                            <div class="form-group">
-                                                <div class="form-label-group">
-                                                    <input type="password" id="changePassword1" name="password"
-                                                           class="form-control" placeholder="Password">
-                                                    <label for="changePassword1">Password</label>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="form-label-group">
-                                                    <input type="password" id="changePassword2" name="password2"
-                                                           class="form-control" placeholder="Password (again)">
-                                                    <label for="changePassword2">Password (again)</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                                            <button class="btn btn-primary" name="action" value="changePassword"
-                                                    type="submit">Change Password</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Modal: Change Password -->
+        <div class="modal fade" id="modalChangePassword">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Change Password</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <form method="POST">
+                        <!--{{ forms['changePassword'].csrf_token }}-->
+                        {{ render_hidden_field(forms['changePassword'].public_id) }}
+                        <div class="modal-body">
+                            {{ render_field(forms['changePassword'].password) }}
+                            {{ render_field(forms['changePassword'].password2) }}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                            <button class="btn btn-primary" name="action" value="changePassword"
+                                    type="submit">Change Password</button>
                         </div>
                     </form>
                 </div>
@@ -311,21 +238,10 @@
                         </button>
                     </div>
                     <form method="POST">
+                        <!--{{ forms['createRole'].csrf_token }}-->
                         <div class="modal-body">
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="text" id="createRoleName" name="name"
-                                           class="form-control" placeholder="Name" required="required">
-                                    <label for="createRoleName">Name</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="text" id="createRoleDescription" name="description"
-                                           class="form-control" placeholder="Description" required="required">
-                                    <label for="createRoleDescription">Description</label>
-                                </div>
-                            </div>
+                            {{ render_field(forms['createRole'].name) }}
+                            {{ render_field(forms['createRole'].description) }}
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
@@ -347,21 +263,10 @@
                         </button>
                     </div>
                     <form method="POST">
+                        <!--{{ forms['modifyRole'].csrf_token }}-->
                         <div class="modal-body">
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="text" id="modifyRoleName" name="name" readonly
-                                           class="form-control" placeholder="Name" required="required">
-                                    <label for="modifyRoleName">Name</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="form-label-group">
-                                    <input type="text" id="modifyRoleDescription" name="description"
-                                           class="form-control" placeholder="Description" required="required">
-                                    <label for="modifyRoleDescription">Description</label>
-                                </div>
-                            </div>
+                            {{ render_field(forms['modifyRole'].name, disabled=True) }}
+                            {{ render_field(forms['modifyRole'].description) }}
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-danger" name="action" value="deleteRole"
@@ -412,12 +317,16 @@
                 $('#modifyAccountPublicId').val(data['publicId']);
                 $('#modifyAccountUsername').val(data['username']);
                 $("#modifyAccountDisplayName").val(data["displayName"]);
-                $("#modifyAccountEMail").val(data['email']);
+                $("#modifyAccountEmail").val(data['email']);
                 $('select[id="modifyAccountRole"]').find('option[value="' + data['role']['name'] + '"]').attr("selected",true);
                 $('#modifyAccountCreated').val(data['created']);
                 $('#modifyAccountLastLogin').val(data['lastLogin']);
-                document.getElementById('modifyAccount2FAEnabled').checked = data['2fa'];
+                if (data['2fa']) {
+                    console.log('trying to set 2fa to true')
+                    $('#modifyAccount2FAEnabled').attr('checked', true);
+                }
                 $('#modalModifyAccount').modal('show');
+                $('#changePasswordPublicId').val(data['publicId']);
             }
 
             function openModalModifyRole(data) {

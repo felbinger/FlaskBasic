@@ -37,12 +37,11 @@ def account():
     if request.method == 'POST':
         if request.form is not None:
             action = request.form.get('action')
-            print(request.form)
             if action == 'modifyProfile':
                 resp = requests.put(
                     f'{request.scheme}://{request.host}{url_for("user_api")}/me',
                     json={
-                        '2fa': request.form.get('enable_2fa') == 'on',
+                        '2fa': request.form.get('enable_2fa') == 'y',
                         'displayName': request.form.get('display_name'),
                         'email': request.form.get('email')
                     },

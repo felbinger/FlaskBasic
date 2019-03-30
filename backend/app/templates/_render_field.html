@@ -1,8 +1,8 @@
 {% macro render_field(field) %}
 <div class="form-group">
     <div class="form-label-group">
-        {{ field(class_='form-control', **kwargs)|safe }}
-        <label for="{{ field.name }}">{{ field.label.text }}</label>
+        {{ field(class_='form-control', placeholder=field.label.text, **kwargs)|safe }}
+        <label for="{{ field.id }}">{{ field.label.text }}</label>
     </div>
 </div>
 {% endmacro %}
@@ -14,8 +14,19 @@
 </div>
 {% endmacro %}
 {% macro render_switch_field(field) %}
-<div class="my-2 custom-control custom-switch">
+<div class="custom-control custom-switch">
     {{ field(class_='custom-control-input', **kwargs)|safe }}
-    <label class="custom-control-label" for="{{ field.name }}">{{ field.label.text }}</label>
+    <label class="custom-control-label" for="{{ field.id }}">{{ field.label.text }}</label>
+</div>
+{% endmacro %}
+{% macro render_select_field(field) %}
+<div class="form-group">
+    <label for="{{ field.id }}">{{ field.label.text }}</label>
+    {{ field(class_='form-control', **kwargs)|safe }}
+</div>
+{% endmacro %}
+{% macro render_hidden_field(field) %}
+<div class="form-group">
+    {{ field(type="hidden", **kwargs)|safe }}
 </div>
 {% endmacro %}

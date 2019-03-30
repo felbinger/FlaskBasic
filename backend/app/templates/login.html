@@ -37,9 +37,9 @@
                     {% endwith %}
                     <form method="POST">
                         {{ form.csrf_token }}
-                        {{ render_field(form.username, placeholder=form.username.label.text) }}
-                        {{ render_field(form.password, placeholder=form.password.label.text) }}
-                        {{ render_field(form.token, placeholder=form.token.label.text) }}
+                        {{ render_field(form.username) }}
+                        {{ render_field(form.password) }}
+                        {{ render_field(form.token) }}
                         <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
                         <a href="/reset/request">Forgot your password?</a>
                     </form>

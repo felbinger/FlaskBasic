@@ -40,7 +40,7 @@ class AuthResource(MethodView):
         # check if the account (email address) is verified
         if not user.verified:
             return AuthResultSchema(
-                message='Unverified email address',
+                message='Account not activated',
                 status_code=401
             ).jsonify()
         # check if 2fa is enabled, and if so check token

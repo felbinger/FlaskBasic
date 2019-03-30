@@ -84,8 +84,8 @@ class UserResource(MethodView):
         # send email
         mail = Mail(current_app)
         verification_link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
-        body = f'Hello, please click <a href="{verification_link}">here</a> to confirm your email.'
-        mail.send_message("Verify your email!", recipients=[data['email']], html=body)
+        body = f'Hello, please click <a href="{verification_link}">here</a> to activate your account.'
+        mail.send_message("Activate your account!", recipients=[data['email']], html=body)
 
         data = user.jsonify()
         data['2fa_secret'] = _2fa_secret
@@ -170,9 +170,10 @@ class UserResource(MethodView):
                 if not val:
                     target.disable_2fa()
                 else:
-                    return ResultErrorSchema(
-                        message='You are not allowed to enable 2FA.'
-                    ).jsonify()
+                    if not target.is_2fa_enabled():
+                        return ResultErrorSchema(
+                            message='You are not allowed to enable 2FA.'
+                        ).jsonify()
             else:
                 setattr(target, key, val)
         db.session.commit()
