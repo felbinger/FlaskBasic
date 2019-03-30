@@ -13,6 +13,10 @@ class AuthSchema(Schema):
         required=True,
         validate=[validate.Length(min=1, max=200)]
     )
+    token = fields.Str(
+        validate=[validate.Length(max=6), validate_spaces],
+        allow_none=True
+    )
 
 
 class AuthResultSchema:

@@ -2,8 +2,8 @@
 This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https://blackrockdigital.github.io/startbootstrap-sb-admin/index.html).
 
 ### TODO
-* API (`users`): Profile Picture
-* API (`authentication`): Redis Blacklist
+* Split Login: User should first enter username/password and then be ask for his token if he has 2fa enabled
+* API (`authentication`): Redis Blacklist/Refresh Tokens
 * Tests: add backend tests (`views`)
 * WTForms: Update Profile and Dashboard forms to WTForms
 * Messaging System

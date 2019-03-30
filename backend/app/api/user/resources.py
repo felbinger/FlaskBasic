@@ -1,11 +1,11 @@
 from flask.views import MethodView
 from flask import request, current_app, url_for
 from flask_mail import Mail
-from hashlib import sha512
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature, BadSignature
 from string import digits, ascii_letters
-from werkzeug.security import generate_password_hash
+from io import BytesIO
 import random
+import pyqrcode
 
 from app.db import db
 from ..schemas import ResultSchema, ResultErrorSchema
@@ -63,7 +63,17 @@ class UserResource(MethodView):
                 status_code=404
             ).jsonify()
 
+        _enable_2fa = False
+        _2fa_secret = None
+        if '2fa' in data:
+            _enable_2fa = True
+            del data['2fa']
+
         user = User(**data)
+
+        if _enable_2fa:
+            _2fa_secret = user.enable_2fa()
+
         db.session.add(user)
         db.session.commit()
 
@@ -77,8 +87,11 @@ class UserResource(MethodView):
         body = f'Hello, please click <a href="{verification_link}">here</a> to confirm your email.'
         mail.send_message("Verify your email!", recipients=[data['email']], html=body)
 
+        data = user.jsonify()
+        data['2fa_secret'] = _2fa_secret
+
         return ResultSchema(
-            data=user.jsonify(),
+            data=data,
             status_code=201
         ).jsonify()
 
@@ -99,10 +112,20 @@ class UserResource(MethodView):
                     message='You are not allowed to change your role!',
                     status_code=403
                 ).jsonify()
+            _2fa_secret = None
             for key, val in data.items():
-                setattr(user, key, val)
+                if key == 'enable_2fa':
+                    if val:
+                        _2fa_secret = user.enable_2fa()
+                    else:
+                        user.disable_2fa()
+                else:
+                    setattr(user, key, val)
             db.session.commit()
-            return ResultSchema(data=user.jsonify()).jsonify()
+            data = user.jsonify()
+            if _2fa_secret:
+                data['2fa_secret'] = _2fa_secret
+            return ResultSchema(data=data).jsonify()
         else:
             target = User.query.filter_by(public_id=uuid).first()
             if not target:
@@ -139,15 +162,22 @@ class UserResource(MethodView):
                 if not role:
                     return ResultErrorSchema(
                         message='Invalid Role',
-                        errors=['invalid role'],
                         status_code=400
                     ).jsonify()
                 else:
                     target.role = role
+            elif key == 'enable_2fa':
+                if not val:
+                    target.disable_2fa()
+                else:
+                    return ResultErrorSchema(
+                        message='You are not allowed to enable 2FA.'
+                    ).jsonify()
             else:
                 setattr(target, key, val)
         db.session.commit()
-        return ResultSchema(data=target.jsonify()).jsonify()
+        data = target.jsonify()
+        return ResultSchema(data=data).jsonify()
 
 
 class VerificationResource(MethodView):
@@ -228,3 +258,21 @@ class ResetResource(MethodView):
             message='Password has been updated, you will find it in your inbox!',
             status_code=200
         ).jsonify()
+
+
+class TwoFAResource(MethodView):
+    @require_token
+    def get(self, user):
+        if user.is_2fa_enabled() and not user.code_viewed:
+            user.code_viewed = True
+            db.session.commit()
+            url = pyqrcode.create(user.get_totp_uri())
+            stream = BytesIO()
+            url.svg(stream, scale=current_app.config['QR_SCALE'])
+            return stream.getvalue(), 200, {
+                'Content-Type': 'image/svg+xml',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        return ResultErrorSchema(message='Unable to generate QR Code').jsonify()

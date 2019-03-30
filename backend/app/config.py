@@ -9,6 +9,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     TOKEN_VALIDITY = 2  # hours
+    QR_SCALE = 5
 
 
 class ProductionConfig(Config):

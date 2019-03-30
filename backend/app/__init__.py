@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
-from .api import UserResource, RoleResource, AuthResource, VerificationResource, ResetResource
+from .api import UserResource, RoleResource, AuthResource, VerificationResource, ResetResource, TwoFAResource
 from .db import db
 from .config import ProductionConfig, DevelopmentConfig
 from .views import default, admin, profile, auth
@@ -31,13 +31,14 @@ def create_app(testing_config=None) -> Flask:
         db.create_all()
 
     # register resources
-    register_resource(app, AuthResource, 'auth_api', '/api/auth', pk=None, get=False, put=False, delete=False)
+    register_resource(app, AuthResource, 'auth_api', '/api/auth', get=False, put=False, delete=False)
     register_resource(app, RoleResource, 'role_api', '/api/roles', pk='name', pk_type='string')
     register_resource(app, UserResource, 'user_api', '/api/users', pk='uuid', pk_type='string')
     register_resource(app, VerificationResource, 'verify_mail_api', '/api/verify', pk='token', pk_type='string',
                       get=False, get_all=False, post=False, delete=False)
     register_resource(app, ResetResource, 'password_reset_api', '/api/reset', pk='token', pk_type='string',
                       get=False, get_all=False, delete=False)
+    register_resource(app, TwoFAResource, 'two_factor_api', '/api/2fa', get=False, post=False, put=False, delete=False)
 
     # register views
     app.register_blueprint(default)

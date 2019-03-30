@@ -2,6 +2,9 @@ from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
 from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
 from datetime import datetime
+from base64 import b32encode
+import os
+import onetimepass
 
 from app.db import db
 
@@ -13,17 +16,21 @@ class User(db.Model):
     username = Column('username', String(64), unique=True, nullable=False)
     displayName = Column('displayName', String(128), unique=True, nullable=True)
     email = Column('email', String(64), unique=True, nullable=False)
-    verified = Column('verified', Boolean, nullable=False)
+    verified = Column('verified', Boolean, nullable=False, default=False)
     _password = Column('password', String(512), nullable=False)
-    created = Column('created', DateTime, nullable=False)
+    created = Column('created', DateTime, nullable=False, default=datetime.utcnow())
     last_login = Column('lastLogin', DateTime)
 
     role_id = Column('role', Integer, ForeignKey('role.id'), nullable=False)
     role = db.relationship('Role', backref=db.backref('users', lazy=True))
 
+    _2fa_enabled = Column('2fa_enabled', Boolean, nullable=False, default=False)
+    _2fa_secret = Column('2fa_secret', String(128), nullable=True, default=None)
+    code_viewed = Column('2fa_qr_viewed', Boolean, nullable=False, default=False)
+
     def __init__(self, *args, **kwargs):
         kwargs['password'] = generate_password_hash(kwargs['password'], method='sha512')
-        super().__init__(*args, **kwargs, public_id=str(uuid4()), verified=False, created=datetime.utcnow())
+        super().__init__(*args, **kwargs, public_id=str(uuid4()))
 
     def jsonify(self):
         return {
@@ -34,11 +41,33 @@ class User(db.Model):
             'verified': self.verified,
             'created': self.created.strftime("%d.%m.%Y %H:%M:%S"),
             'lastLogin': self.last_login.strftime("%d.%m.%Y %H:%M:%S") if self.last_login else None,
-            'role': self.role.jsonify()
+            'role': self.role.jsonify(),
+            '2fa': self._2fa_enabled
         }
 
     def verify_password(self, password):
         return check_password_hash(self._password, password)
+
+    def is_2fa_enabled(self):
+        return self._2fa_enabled
+
+    def enable_2fa(self):
+        if not self._2fa_enabled:
+            self._2fa_enabled = True
+            self._2fa_secret = b32encode(os.urandom(10)).decode('utf-8')
+            return self._2fa_secret
+
+    def disable_2fa(self):
+        if self._2fa_enabled:
+            self._2fa_enabled = False
+            self._2fa_secret = None
+            self.code_viewed = False
+
+    def get_totp_uri(self):
+        return f'otpauth://totp/FlaskBasic:{self.username}?secret={self._2fa_secret}&issuer=FlaskBasic'
+
+    def verify_totp(self, token):
+        return onetimepass.valid_totp(token, self._2fa_secret)
 
     @property
     def password(self):

@@ -12,6 +12,7 @@ auth = Blueprint(__name__, 'auth')
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=80)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=200)])
+    token = StringField("2FA Token", validators=[Length(max=6)])
 
 
 class PasswordResetForm(FlaskForm):
@@ -29,10 +30,14 @@ def login():
                 f'{request.scheme}://{request.host}{url_for("auth_api")}',
                 json={
                     'username': form.username.data,
-                    'password': form.password.data
+                    'password': form.password.data,
+                    'token': form.token.data or None
                 }
             ).json()
-            if resp.get('token'):
+            if resp.get('message') == '2FA required':
+                return redirect(url_for('app.views.auth.get_2fa'))
+            elif resp.get('token'):
+                print(resp.get('token'))
                 session['Access-Token'] = resp.get('token')
                 return redirect(url_for('app.views.default.index'))
             else:

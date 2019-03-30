@@ -46,6 +46,14 @@
                                                 <img src="/picture/{{ data['publicId'] }}"
                                                      alt="Profile Picture" width="200" height="200">
                                                 <!-- TODO update profile picture: <input type="file">-->
+                                                <div class="my-2 custom-control custom-switch">
+                                                    {% if data['2fa'] %}
+                                                        <input type="checkbox" class="custom-control-input" name="2faEnabled" id="profile2FAEnabled" checked>
+                                                    {% else %}
+                                                        <input type="checkbox" class="custom-control-input" name="2faEnabled" id="profile2FAEnabled">
+                                                    {% endif %}
+                                                    <label class="custom-control-label" for="profile2FAEnabled">2FA enabled</label>
+                                                </div>
                                             </div>
                                             <div class="col-md-10">
                                                 <div class="form-group">
@@ -77,8 +85,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
                                             <div class="offset-md-2 col-md-5">
                                                 <div class="form-group">
                                                     <div class="form-label-group">
@@ -96,6 +102,12 @@
                                                         <label for="profileCreated">Created</label>
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <div class="offset-md-2 col-md-5">
+                                                {{ data['2fa']['text']|safe }}
+                                            </div>
+                                            <div class="col-md-5">
+                                                {{ data['2fa']['qr']|safe }}
                                             </div>
                                         </div>
                                         <div align="right" class="form-group">
