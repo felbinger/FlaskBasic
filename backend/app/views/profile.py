@@ -1,45 +1,49 @@
 from flask import Blueprint, render_template, request, session, url_for, flash, send_from_directory, Markup
-# from flask_wtf import FlaskForm
-# from wtforms import StringField, PasswordField
-# from wtforms.validators import InputRequired, EqualTo
+from flask_wtf import FlaskForm
+from wtforms import StringField, BooleanField, PasswordField
+from wtforms.validators import Length, EqualTo
 import requests
 
 from .utils import require_login
 
 profile = Blueprint(__name__, 'profile')
 
-"""
+
 class ProfileForm(FlaskForm):
     display_name = StringField('Display Name')
-    email = StringField('E-Mail')
+    email = StringField('E-Mail Address')
+    username = StringField('Username')
+    role = StringField('Role')
+    created = StringField('Created')
+    last_login = StringField('Last Login')
+    enable_2fa = BooleanField('2FA enabled')
 
 
 class ChangePasswordForm(FlaskForm):
-    password = PasswordField('Password')
+    password = PasswordField('Password', validators=[Length(min=8)])
     password2 = PasswordField('Password (again)', validators=[EqualTo('password')])
-"""
 
 
 @require_login
 @profile.route('/profile', methods=['GET', 'POST'])
 def account():
-    """
     forms = dict()
-    forms['modifyProfile'] = ProfileForm
-    forms['changePassword'] = ChangePasswordForm
-    """
+    forms['modifyProfile'] = ProfileForm()
+    forms['changePassword'] = ChangePasswordForm()
+
+    # todo implement form validation on submit
+
     header = {'Access-Token': session.get('Access-Token')}
-    twofa = dict()
     if request.method == 'POST':
         if request.form is not None:
             action = request.form.get('action')
-
+            print(request.form)
             if action == 'modifyProfile':
                 resp = requests.put(
                     f'{request.scheme}://{request.host}{url_for("user_api")}/me',
                     json={
-                        '2fa': request.form.get('2faEnabled') == 'on',
-                        'displayName': request.form.get('displayName'),
+                        '2fa': request.form.get('enable_2fa') == 'on',
+                        'displayName': request.form.get('display_name'),
                         'email': request.form.get('email')
                     },
                     headers=header
@@ -48,37 +52,38 @@ def account():
                     flash(f'Unable to update account: {resp.json().get("message")}', 'danger')
                 else:
                     if '2fa_secret' in resp.json().get('data'):
-                        secret = resp.json().get('data').get('2fa_secret')
-                        twofa['qr'] = requests.get(
+                        data = dict()
+                        data['secret'] = resp.json().get('data').get('2fa_secret')
+                        data['qr'] = requests.get(
                             f'{request.scheme}://{request.host}{url_for("two_factor_api")}',
                             headers=header
                         ).text
-                        twofa['text'] = f'Your new 2FA Secret Key is: <code>{secret}</code>'
+                        return render_template('setup2FA.html', data=data), {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
                     flash(f'Account has been update!', 'success')
 
             elif action == 'changePassword':
-                public_id = request.form.get('id')
                 password = request.form.get('password')
-                if public_id:
-                    if password == request.form.get('password2'):
-                        if len(password) < 8:
-                            flash('Password is too short!', 'danger')
-                        else:
-                            resp = requests.put(
-                                f'{request.scheme}://{request.host}{url_for("user_api")}/me',
-                                headers=header,
-                                json={
-                                    'password': password
-                                }
-                            )
-                            if resp.status_code != 200:
-                                flash(f'Unable to update password: {resp.json().get("message")}', 'danger')
-                            else:
-                                flash('Password has been updated!', 'success')
+                if password == request.form.get('password2'):
+                    if len(password) < 8:
+                        flash('Password is too short!', 'danger')
                     else:
-                        flash('The entered Password\'s are not the same!', 'danger')
+                        resp = requests.put(
+                            f'{request.scheme}://{request.host}{url_for("user_api")}/me',
+                            headers=header,
+                            json={
+                                'password': password
+                            }
+                        )
+                        if resp.status_code != 200:
+                            flash(f'Unable to update password: {resp.json().get("message")}', 'danger')
+                        else:
+                            flash('Password has been updated!', 'success')
                 else:
-                    flash('You need to provide an uuid to change the password of an account!', 'danger')
+                    flash('The entered Password\'s are not the same!', 'danger')
 
     role = requests.get(
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
@@ -90,10 +95,7 @@ def account():
         headers=header,
     ).json().get('data')
 
-    if twofa:
-        data['2fa'] = twofa
-
-    return render_template('profile.html', data=data, role=role)
+    return render_template('profile.html', data=data, role=role, forms=forms)
 
 
 # todo redesign

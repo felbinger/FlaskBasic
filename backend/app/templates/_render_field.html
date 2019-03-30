@@ -13,3 +13,9 @@
     </div>
 </div>
 {% endmacro %}
+{% macro render_switch_field(field) %}
+<div class="my-2 custom-control custom-switch">
+    {{ field(class_='custom-control-input', **kwargs)|safe }}
+    <label class="custom-control-label" for="{{ field.name }}">{{ field.label.text }}</label>
+</div>
+{% endmacro %}
