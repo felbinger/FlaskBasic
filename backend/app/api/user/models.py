@@ -39,8 +39,8 @@ class User(db.Model):
             'displayName': self.displayName if self.displayName else self.username,
             'email': self.email,
             'verified': self.verified,
-            'created': self.created.strftime("%d.%m.%Y %H:%M:%S"),
-            'lastLogin': self.last_login.strftime("%d.%m.%Y %H:%M:%S") if self.last_login else None,
+            'created': self.created.isoformat(),
+            'lastLogin': self.last_login.isoformat()if self.last_login else None,
             'role': self.role.jsonify(),
             '2fa': self._2fa_enabled
         }
