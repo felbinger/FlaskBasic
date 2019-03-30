@@ -63,17 +63,7 @@ class UserResource(MethodView):
                 status_code=404
             ).jsonify()
 
-        _enable_2fa = False
-        _2fa_secret = None
-        if '2fa' in data:
-            _enable_2fa = True
-            del data['2fa']
-
         user = User(**data)
-
-        if _enable_2fa:
-            _2fa_secret = user.enable_2fa()
-
         db.session.add(user)
         db.session.commit()
 
@@ -84,7 +74,8 @@ class UserResource(MethodView):
         # send email
         mail = Mail(current_app)
         verification_link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
-        body = f'Hello, please click <a href="{verification_link}">here</a> to activate your account.'
+        body = f'Hello, your account has been created. Your password is: <code>{data["password"]}</code>' \
+            f'Please click <a href="{verification_link}">here</a> to activate your account.'
         mail.send_message("Activate your account!", recipients=[data['email']], html=body)
 
         data = user.jsonify()
