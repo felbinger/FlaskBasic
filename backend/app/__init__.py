@@ -38,7 +38,7 @@ def create_app(testing_config=None) -> Flask:
                       get=False, get_all=False, post=False, delete=False)
     register_resource(app, ResetResource, 'password_reset_api', '/api/reset', pk='token', pk_type='string',
                       get=False, get_all=False, delete=False)
-    register_resource(app, TwoFAResource, 'two_factor_api', '/api/2fa', get=False, post=False, put=False, delete=False)
+    register_resource(app, TwoFAResource, 'two_factor_api', '/api/2fa', get=False, put=False, delete=False)
 
     # register views
     app.register_blueprint(default)

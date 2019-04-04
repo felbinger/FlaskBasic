@@ -3,8 +3,8 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 
 ### TODO
 * 2FA:
-    * Split Login: User should first enter username/password and then be ask for his token if he has 2fa enabled
     * User should check if 2fa is working after setup, only if he can provide a valid token 2fa should be activated.
+       * API to check token has been implemented
 * API (`authentication`): Redis Blacklist/Refresh Tokens
 * Tests: add missing tests
 * WTForms: Update dashboard/profile (validation using WTForms)

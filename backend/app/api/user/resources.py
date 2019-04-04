@@ -12,7 +12,7 @@ from ..schemas import ResultSchema, ResultErrorSchema
 from ..authentication import require_token, require_admin
 from ..role import Role
 from ..user.models import User
-from .schemas import DaoCreateUserSchema, DaoUpdateUserSchema, DaoRequestPasswordResetSchema
+from .schemas import DaoCreateUserSchema, DaoUpdateUserSchema, DaoRequestPasswordResetSchema, DaoTokenSchema
 
 
 def random_string(length=16):
@@ -103,19 +103,19 @@ class UserResource(MethodView):
                     message='You are not allowed to change your role!',
                     status_code=403
                 ).jsonify()
-            _2fa_secret = None
+            totp_secret = None
             for key, val in data.items():
                 if key == 'enable_2fa':
                     if val:
-                        _2fa_secret = user.enable_2fa()
+                        totp_secret = user.enable_2fa()
                     else:
                         user.disable_2fa()
                 else:
                     setattr(user, key, val)
             db.session.commit()
             data = user.jsonify()
-            if _2fa_secret:
-                data['2fa_secret'] = _2fa_secret
+            if totp_secret:
+                data['2fa_secret'] = totp_secret
             return ResultSchema(data=data).jsonify()
         else:
             target = User.query.filter_by(public_id=uuid).first()
@@ -161,7 +161,7 @@ class UserResource(MethodView):
                 if not val:
                     target.disable_2fa()
                 else:
-                    if not target.is_2fa_enabled():
+                    if not target.totp_enabled:
                         return ResultErrorSchema(
                             message='You are not allowed to enable 2FA.'
                         ).jsonify()
@@ -255,7 +255,7 @@ class ResetResource(MethodView):
 class TwoFAResource(MethodView):
     @require_token
     def get(self, user):
-        if user.is_2fa_enabled() and not user.code_viewed:
+        if user.totp_enabled and not user.code_viewed:
             user.code_viewed = True
             db.session.commit()
             url = pyqrcode.create(user.get_totp_uri())
@@ -268,3 +268,18 @@ class TwoFAResource(MethodView):
                 'Expires': '0'
             }
         return ResultErrorSchema(message='Unable to generate QR Code').jsonify()
+
+    @require_token
+    def post(self, user):
+        schema = DaoTokenSchema()
+        data = request.get_json()
+        data, error = schema.load(data)
+        if error:
+            return ResultErrorSchema(
+                message='Payload is invalid',
+                errors=error,
+                status_code=400
+            ).jsonify()
+        return ResultSchema(
+            data=user.verify_totp(data['token']) if user.totp_enabled else '2fa is not enabled'
+        ).jsonify()

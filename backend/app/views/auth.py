@@ -12,12 +12,15 @@ auth = Blueprint(__name__, 'auth')
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=80)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=200)])
-    token = StringField("2FA Token", validators=[Length(max=6)])
 
 
 class PasswordResetForm(FlaskForm):
     email = StringField('E-Mail', validators=[InputRequired()])
     recaptcha = RecaptchaField()
+
+
+class TOTPForm(FlaskForm):
+    token = StringField("2FA Token", validators=[Length(max=6)])
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -30,20 +33,48 @@ def login():
                 f'{request.scheme}://{request.host}{url_for("auth_api")}',
                 json={
                     'username': form.username.data,
-                    'password': form.password.data,
-                    'token': form.token.data or None
+                    'password': form.password.data
                 }
             ).json()
-            if resp.get('message') == '2FA required':
+            if resp.get('message') == 'Missing 2fa token':
+                # @Security: possible credential exposure in unencrypted token
+                # maybe execute some rot or so before to obfuscate credentials?
+                session['username'] = form.username.data
+                session['password'] = form.password.data
                 return redirect(url_for('app.views.auth.get_2fa'))
             elif resp.get('token'):
                 session['Access-Token'] = resp.get('token')
+                print(resp.get('token'))
                 return redirect(url_for('app.views.default.index'))
             else:
                 flash(resp.get('message'), 'danger')
         else:
             flash('Invalid Credentials!', 'danger')
     return render_template('login.html', form=form)
+
+
+@require_logout
+@auth.route('/get2fa', methods=['GET', 'POST'])
+def get_2fa():
+    form = TOTPForm()
+    if form.validate_on_submit():
+        resp = requests.post(
+            f'{request.scheme}://{request.host}{url_for("auth_api")}',
+            json={
+                'username': session['username'],
+                'password': session['password'],
+                'token': form.token.data
+            }
+        ).json()
+        if resp.get('token'):
+            session['Access-Token'] = resp.get('token')
+            print(resp.get('token'))
+            del session['username']
+            del session['password']
+            return redirect(url_for('app.views.default.index'))
+        else:
+            flash(resp.get('message'), 'danger')
+    return render_template('get2FAToken.html', form=form)
 
 
 @require_login

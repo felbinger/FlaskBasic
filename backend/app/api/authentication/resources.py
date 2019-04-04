@@ -43,12 +43,23 @@ class AuthResource(MethodView):
                 message='Account not activated',
                 status_code=401
             ).jsonify()
-        # check if 2fa is enabled, and if so check token
-        if user.is_2fa_enabled() and not user.verify_totp(data.get('token')):
-            return AuthResultSchema(
-                message='Wrong credentials',
-                status_code=401
-            ).jsonify()
+        # check if 2fa is enabled
+        if user.totp_enabled:
+            # check if token is in data
+            if 'token' in data:
+                # check if submitted 2fa token is valid
+                if not user.verify_totp(data.get('token')):
+                    # @Security: (read next note first): this message could be exchanged through 2fa token invalid
+                    return AuthResultSchema(
+                        message='Wrong credentials',
+                        status_code=401
+                    ).jsonify()
+            else:
+                # @Security: Could an attacker use this error message to validate username and password
+                return AuthResultSchema(
+                    message='Missing 2fa token',
+                    status_code=401
+                ).jsonify()
 
         # set the last_login attribute in the user object to the current time
         user.last_login = datetime.now()

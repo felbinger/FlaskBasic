@@ -24,8 +24,8 @@ class User(db.Model):
     role_id = Column('role', Integer, ForeignKey('role.id'), nullable=False)
     role = db.relationship('Role', backref=db.backref('users', lazy=True))
 
-    _2fa_enabled = Column('2fa_enabled', Boolean, nullable=False, default=False)
-    _2fa_secret = Column('2fa_secret', String(128), nullable=True, default=None)
+    totp_enabled = Column('2fa_enabled', Boolean, nullable=False, default=False)
+    totp_secret = Column('2fa_secret', String(128), nullable=True, default=None)
     code_viewed = Column('2fa_qr_viewed', Boolean, nullable=False, default=False)
 
     def __init__(self, *args, **kwargs):
@@ -42,32 +42,29 @@ class User(db.Model):
             'created': self.created.isoformat(),
             'lastLogin': self.last_login.isoformat()if self.last_login else None,
             'role': self.role.jsonify(),
-            '2fa': self._2fa_enabled
+            '2fa': self.totp_enabled
         }
 
     def verify_password(self, password):
         return check_password_hash(self._password, password)
 
-    def is_2fa_enabled(self):
-        return self._2fa_enabled
-
     def enable_2fa(self):
-        if not self._2fa_enabled:
-            self._2fa_enabled = True
-            self._2fa_secret = b32encode(os.urandom(10)).decode('utf-8')
-            return self._2fa_secret
+        if not self.totp_enabled:
+            self.totp_enabled = True
+            self.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
+            return self.totp_secret
 
     def disable_2fa(self):
-        if self._2fa_enabled:
-            self._2fa_enabled = False
-            self._2fa_secret = None
+        if self.totp_enabled:
+            self.totp_enabled = False
+            self.totp_secret = None
             self.code_viewed = False
 
     def get_totp_uri(self):
-        return f'otpauth://totp/FlaskBasic:{self.username}?secret={self._2fa_secret}&issuer=FlaskBasic'
+        return f'otpauth://totp/FlaskBasic:{self.username}?secret={self.totp_secret}&issuer=FlaskBasic'
 
     def verify_totp(self, token):
-        return onetimepass.valid_totp(token, self._2fa_secret)
+        return onetimepass.valid_totp(token, self.totp_secret)
 
     @property
     def password(self):
