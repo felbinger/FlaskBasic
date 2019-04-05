@@ -2,8 +2,6 @@ from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
 from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
 from datetime import datetime
-from base64 import b32encode
-import os
 import onetimepass
 
 from app.db import db
@@ -47,18 +45,6 @@ class User(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self._password, password)
-
-    def enable_2fa(self):
-        if not self.totp_enabled:
-            self.totp_enabled = True
-            self.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
-            return self.totp_secret
-
-    def disable_2fa(self):
-        if self.totp_enabled:
-            self.totp_enabled = False
-            self.totp_secret = None
-            self.code_viewed = False
 
     def get_totp_uri(self):
         return f'otpauth://totp/FlaskBasic:{self.username}?secret={self.totp_secret}&issuer=FlaskBasic'

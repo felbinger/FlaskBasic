@@ -4,6 +4,8 @@ from flask_mail import Mail
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature, BadSignature
 from string import digits, ascii_letters
 from io import BytesIO
+from base64 import b32encode
+import os
 import random
 import pyqrcode
 
@@ -107,9 +109,15 @@ class UserResource(MethodView):
             for key, val in data.items():
                 if key == 'enable_2fa':
                     if val:
-                        totp_secret = user.enable_2fa()
+                        if not user.totp_enabled:
+                            user.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
+                            totp_secret = user.totp_secret
+                            user.code_viewed = False
                     else:
-                        user.disable_2fa()
+                        if user.totp_enabled:
+                            user.totp_enabled = False
+                            user.totp_secret = None
+                            user.code_viewed = False
                 else:
                     setattr(user, key, val)
             db.session.commit()
@@ -159,7 +167,10 @@ class UserResource(MethodView):
                     target.role = role
             elif key == 'enable_2fa':
                 if not val:
-                    target.disable_2fa()
+                    if target.totp_enabled:
+                        target.totp_enabled = False
+                        target.totp_secret = None
+                        target.code_viewed = False
                 else:
                     if not target.totp_enabled:
                         return ResultErrorSchema(
@@ -255,7 +266,7 @@ class ResetResource(MethodView):
 class TwoFAResource(MethodView):
     @require_token
     def get(self, user):
-        if user.totp_enabled and not user.code_viewed:
+        if not user.totp_enabled and not user.code_viewed:
             user.code_viewed = True
             db.session.commit()
             url = pyqrcode.create(user.get_totp_uri())
@@ -280,6 +291,24 @@ class TwoFAResource(MethodView):
                 errors=error,
                 status_code=400
             ).jsonify()
-        return ResultSchema(
-            data=user.verify_totp(data['token']) if user.totp_enabled else '2fa is not enabled'
-        ).jsonify()
+        if user.totp_secret:
+            if user.verify_totp(data['token']):
+                user.totp_enabled = True
+                db.session.commit()
+                return ResultErrorSchema(
+                    message='2fa has been enabled',
+                    status_code=200
+                ).jsonify()
+            else:
+                user.totp_secret = None
+                user.code_viewed = False
+                db.session.commit()
+                return ResultErrorSchema(
+                    message='invalid token, 2fa stays disabled',
+                    status_code=400
+                ).jsonify()
+        else:
+            return ResultErrorSchema(
+                message='2fa is not setted up',
+                status_code=400
+            ).jsonify()
