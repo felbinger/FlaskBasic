@@ -1,6 +1,14 @@
-from flask import Blueprint, render_template, request, session, url_for, flash
+from flask import (
+    Blueprint, render_template,
+    request, session,
+    url_for, flash
+)
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, BooleanField, HiddenField
+from wtforms import (
+    StringField, PasswordField,
+    SelectField, BooleanField,
+    HiddenField
+)
 from wtforms.validators import DataRequired
 import requests
 
@@ -91,7 +99,7 @@ def dashboard():
                     resp = requests.put(
                         f'{request.scheme}://{request.host}{url_for("user_api")}/{public_id}',
                         json={
-                            '2fa': False if not request.form.get('enable_2fa') else True,
+                            'totp_enabled': False if not request.form.get('enable_2fa') else True,
                             'username': request.form.get('username'),
                             'displayName': request.form.get('display_name'),
                             'email': request.form.get('email'),

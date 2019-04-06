@@ -1,7 +1,10 @@
 from flask.views import MethodView
 from flask import request, current_app, url_for
 from flask_mail import Mail
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature, BadSignature
+from itsdangerous import (
+    URLSafeTimedSerializer, SignatureExpired,
+    BadTimeSignature, BadSignature
+)
 from string import digits, ascii_letters
 from io import BytesIO
 from base64 import b32encode
@@ -14,7 +17,10 @@ from ..schemas import ResultSchema, ResultErrorSchema
 from ..authentication import require_token, require_admin
 from ..role import Role
 from ..user.models import User
-from .schemas import DaoCreateUserSchema, DaoUpdateUserSchema, DaoRequestPasswordResetSchema, DaoTokenSchema
+from .schemas import (
+    DaoCreateUserSchema, DaoUpdateUserSchema,
+    DaoRequestPasswordResetSchema, DaoTokenSchema
+)
 
 
 def random_string(length=16):
@@ -192,7 +198,7 @@ class UserResource(MethodView):
                     ).jsonify()
                 else:
                     target.role = role
-            elif key == 'enable_2fa':
+            elif key == 'totp_enabled':
                 if not val:
                     if target.totp_enabled:
                         target.totp_enabled = False

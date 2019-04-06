@@ -1,4 +1,8 @@
-from flask import Blueprint, render_template, request, session, redirect, url_for, flash
+from flask import (
+    Blueprint, render_template,
+    request, session, redirect,
+    url_for, flash
+)
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField
 from wtforms.validators import InputRequired, Length

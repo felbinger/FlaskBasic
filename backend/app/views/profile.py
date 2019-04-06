@@ -1,5 +1,9 @@
-from flask import Blueprint, render_template, request, session, url_for, flash, send_from_directory, redirect, \
-    current_app
+from flask import (
+    Blueprint, render_template,
+    request, session, url_for,
+    flash, send_from_directory,
+    redirect, current_app
+)
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField
 from wtforms.validators import Length, EqualTo
@@ -48,8 +52,8 @@ def account():
                 resp = requests.put(
                     f'{request.scheme}://{request.host}{url_for("user_api")}/me',
                     json={
-                        '2fa': request.form.get('enable_2fa') == 'y',
-                        '2faToken': request.form.get('totp_token'),
+                        'totp_enabled': request.form.get('enable_2fa') == 'y',
+                        'totp_token': request.form.get('totp_token'),
                         'displayName': request.form.get('display_name'),
                         'email': request.form.get('email')
                     },

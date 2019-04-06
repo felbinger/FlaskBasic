@@ -2,7 +2,11 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
-from .api import UserResource, RoleResource, AuthResource, VerificationResource, ResetResource, TwoFAResource
+from .api import (
+    UserResource, RoleResource,
+    AuthResource, VerificationResource,
+    ResetResource, TwoFAResource
+)
 from .db import db
 from .config import ProductionConfig, DevelopmentConfig
 from .views import default, admin, profile, auth

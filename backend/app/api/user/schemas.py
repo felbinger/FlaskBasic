@@ -28,9 +28,9 @@ class DaoUpdateUserSchema(Schema):
     email = fields.Email([validate_spaces])
     password = fields.Str(validate=[validate.Length(min=8, max=200)])
     role = fields.Str()
-    totp_enabled = fields.Boolean(load_from='2fa')  # change to data_key in marshmallow 3.0
+    totp_enabled = fields.Boolean()  # change to data_key in marshmallow 3.0
     # token to deactivate 2fa
-    totp_token = fields.Str(load_from='2faToken', allow_none=True)  # change to data_key in marshmallow 3.0
+    totp_token = fields.Str(allow_none=True)  # change to data_key in marshmallow 3.0
 
 
 class DaoRequestPasswordResetSchema(Schema):

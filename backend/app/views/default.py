@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, request, session, url_for
+from flask import (
+    Blueprint, render_template,
+    request, session, url_for
+)
 import requests
 
 from .utils import require_login
