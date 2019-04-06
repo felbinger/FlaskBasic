@@ -113,8 +113,12 @@ class UserResource(MethodView):
                     status_code=403
                 ).jsonify()
             totp_secret = None
+            totp_deactivation_token = None
+            if 'totp_token' in data:
+                totp_deactivation_token = data.get('totp_token')
+                del data['totp_token']
             for key, val in data.items():
-                if key == 'enable_2fa':
+                if key == 'totp_enabled':
                     if val:
                         # create secret and set code_viewed to false, to make it possible to generate a qr code
                         if not user.totp_enabled:
@@ -122,10 +126,21 @@ class UserResource(MethodView):
                             totp_secret = user.totp_secret
                             user.code_viewed = False
                     else:
+                        # deactivate 2fa
                         if user.totp_enabled:
-                            user.totp_enabled = False
-                            user.totp_secret = None
-                            user.code_viewed = False
+                            # if submitted token is valid
+                            if not totp_deactivation_token:
+                                return ResultErrorSchema(
+                                    message='Unable to deactivate 2fa, token not submitted'
+                                ).jsonify()
+                            if user.verify_totp(totp_deactivation_token):
+                                user.totp_enabled = False
+                                user.totp_secret = None
+                                user.code_viewed = False
+                            else:
+                                return ResultErrorSchema(
+                                    message='Unable to deactivate 2fa, token is invalid'
+                                ).jsonify()
                 else:
                     setattr(user, key, val)
             db.session.commit()

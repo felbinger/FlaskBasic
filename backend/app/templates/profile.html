@@ -42,13 +42,28 @@
                                     <form method="POST">
                                     {{ forms['modifyProfile'].csrf_token }}
                                         <div class="row">
+
                                             <div class="col-lg-2">
                                                 <img class="rounded" src="/picture/{{ data['publicId'] }}" alt="Profile Picture"
                                                      width="200" height="200">
                                                 <!-- TODO update profile picture: <input type="file">-->
                                                 <div class="my-2">
-                                                    {{ render_switch_field(forms['modifyProfile'].enable_2fa, checked=data['2fa']) }}
+                                                    {{ render_switch_field(forms['modifyProfile'].enable_2fa, checked=data['2fa'], onclick='show2FAInput()') }}
+                                                    {% if data['2fa'] %}
+                                                        <div class="my-2" style="display: none;" id="disable2fa">
+                                                            {{ render_field(forms['modifyProfile'].totp_token) }}
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
+                                                <script>
+                                                    function show2FAInput() {
+                                                        let style = "none";
+                                                        if (!document.getElementById("enable_2fa").checked){
+                                                            style = "block";
+                                                        }
+                                                        document.getElementById("disable2fa").style.display = style;
+                                                    }
+                                                </script>
                                             </div>
                                             <div class="col-lg-10">
                                                 <div class="row">

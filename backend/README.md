@@ -2,9 +2,9 @@
 This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https://blackrockdigital.github.io/startbootstrap-sb-admin/index.html).
 
 ### TODO
-* 2FA:
-    * Token should be required to disable 2fa (in user settings, not in admin dashboard).
-* API (`authentication`): Redis Blacklist/Refresh Tokens
+* API (`authentication`): 
+    * Redis Blacklist: https://flask-jwt-extended.readthedocs.io/en/latest/blacklist_and_token_revoking.html
+    * Refresh Tokens
 * Tests: add missing tests
 * Upload function for profile pictures (named by user uuid)
 * WTForms: Update dashboard/profile (validation using WTForms)

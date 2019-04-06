@@ -19,6 +19,7 @@ class ProfileForm(FlaskForm):
     created = StringField('Created')
     last_login = StringField('Last Login')
     enable_2fa = BooleanField('2FA enabled')
+    totp_token = StringField('Token to deactivate 2fa')
 
 
 class ChangePasswordForm(FlaskForm):
@@ -48,6 +49,7 @@ def account():
                     f'{request.scheme}://{request.host}{url_for("user_api")}/me',
                     json={
                         '2fa': request.form.get('enable_2fa') == 'y',
+                        '2faToken': request.form.get('totp_token'),
                         'displayName': request.form.get('display_name'),
                         'email': request.form.get('email')
                     },
@@ -122,8 +124,10 @@ def enable2fa():
                     'token': form.token.data
                 }
             ).json()
-            msg = resp.get('message')
-            flash(msg, 'danger' if 'invalid' in msg else 'success')
+            if 'invalid' not in resp.get('message'):
+                flash('2FA has been activated', 'success')
+            else:
+                flash('Invalid Token', 'danger')
         else:
             flash('Invalid Token', 'danger')
         return redirect(url_for('app.views.profile.account'))
