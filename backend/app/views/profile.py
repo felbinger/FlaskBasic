@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, session, url_for, flash, send_from_directory, redirect
+from flask import Blueprint, render_template, request, session, url_for, flash, send_from_directory, redirect, \
+    current_app
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, PasswordField
 from wtforms.validators import Length, EqualTo
+from dateutil.parser import parse
 import requests
 
 from .utils import require_login
@@ -89,6 +91,9 @@ def account():
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
         headers=header,
     ).json().get('data')
+    # reformat timestamps
+    data['lastLogin'] = parse(data['lastLogin']).strftime(current_app.config['TIME_FORMAT'])
+    data['created'] = parse(data['created']).strftime(current_app.config['TIME_FORMAT'])
 
     return render_template('profile.html', data=data, role=role, forms=forms)
 

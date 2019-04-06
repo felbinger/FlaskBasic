@@ -43,6 +43,9 @@ class UserResource(MethodView):
     @require_token
     @require_admin
     def post(self, **_):
+        """
+        Create an new user account
+        """
         data = request.get_json() or {}
         schema = DaoCreateUserSchema()
         data, error = schema.load(data)
@@ -52,12 +55,15 @@ class UserResource(MethodView):
                 errors=error,
                 status_code=400
             ).jsonify()
+
+        # check if the username is already in use
         user_exists = User.query.filter_by(username=data['username']).first()
         if user_exists:
             return ResultErrorSchema(
                 message='Username already in use!',
                 status_code=422
             ).jsonify()
+        # get the role object
         data['role'] = Role.query.filter_by(name=data.get('role')).first()
         if not data['role']:
             return ResultErrorSchema(
@@ -65,6 +71,7 @@ class UserResource(MethodView):
                 status_code=404
             ).jsonify()
 
+        # create the user and add it to the database
         user = User(**data)
         db.session.add(user)
         db.session.commit()
@@ -73,23 +80,23 @@ class UserResource(MethodView):
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
         token = s.dumps(data['email'], salt='verify-email')
 
-        # send email
+        # send email with verification token to enable account
         mail = Mail(current_app)
         verification_link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
         body = f'Hello, your account has been created. Your password is: <code>{data["password"]}</code>' \
             f'Please click <a href="{verification_link}">here</a> to activate your account.'
         mail.send_message("Activate your account!", recipients=[data['email']], html=body)
 
-        data = user.jsonify()
-        data['2fa_secret'] = _2fa_secret
-
         return ResultSchema(
-            data=data,
+            data=user.jsonify(),
             status_code=201
         ).jsonify()
 
     @require_token
     def put(self, uuid, user, **_):
+        """
+        Modify an existing user account
+        """
         if uuid == 'me':
             schema = DaoUpdateUserSchema()
             data = request.get_json()
@@ -109,6 +116,7 @@ class UserResource(MethodView):
             for key, val in data.items():
                 if key == 'enable_2fa':
                     if val:
+                        # create secret and set code_viewed to false, to make it possible to generate a qr code
                         if not user.totp_enabled:
                             user.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
                             totp_secret = user.totp_secret
@@ -121,6 +129,7 @@ class UserResource(MethodView):
                 else:
                     setattr(user, key, val)
             db.session.commit()
+            # if a new secret has been created, add it to the data for 2fa activation process
             data = user.jsonify()
             if totp_secret:
                 data['2fa_secret'] = totp_secret
@@ -137,6 +146,9 @@ class UserResource(MethodView):
     @require_token
     @require_admin
     def delete(self, uuid, **_):
+        """
+        Delete an existing account (only with valid public_id not with 'me')
+        """
         user = User.query.filter_by(public_id=uuid).first()
         db.session.delete(user)
         db.session.commit()
@@ -203,6 +215,9 @@ class VerificationResource(MethodView):
 
 class ResetResource(MethodView):
     def post(self):
+        """
+        Request password reset
+        """
         schema = DaoRequestPasswordResetSchema()
         data = request.get_json()
         data, error = schema.load(data)
@@ -234,6 +249,9 @@ class ResetResource(MethodView):
         ).jsonify()
 
     def put(self, token):
+        """
+        Confirm password reset, by clicking the link in the email (html can't do put so it's the link of the view)
+        """
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
         try:
             email = s.loads(token, salt='reset-password', max_age=7200)
@@ -246,14 +264,12 @@ class ResetResource(MethodView):
         if user:
             new_password = random_string()
 
-            # send email
+            # send the new password using email
             mail = Mail(current_app)
             body = f'Hello, your new password is: <code>{new_password}</code>'
             mail.send_message("Password Reset!", recipients=[user.email], html=body)
 
-            print(body)
-
-            # update password
+            # update password in database
             user.password = new_password
             db.session.commit()
 
@@ -282,6 +298,9 @@ class TwoFAResource(MethodView):
 
     @require_token
     def post(self, user):
+        """
+        Activate 2FA with a valid token
+        """
         schema = DaoTokenSchema()
         data = request.get_json()
         data, error = schema.load(data)

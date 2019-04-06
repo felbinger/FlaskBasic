@@ -3,10 +3,10 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 
 ### TODO
 * 2FA:
-    * User should check if 2fa is working after setup, only if he can provide a valid token 2fa should be activated.
-       * API to check token has been implemented
+    * Token should be required to disable 2fa (in user settings, not in admin dashboard).
 * API (`authentication`): Redis Blacklist/Refresh Tokens
 * Tests: add missing tests
+* Upload function for profile pictures (named by user uuid)
 * WTForms: Update dashboard/profile (validation using WTForms)
 * Messaging System
 

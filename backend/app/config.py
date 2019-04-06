@@ -10,6 +10,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     TOKEN_VALIDITY = 2  # hours
     QR_SCALE = 5
+    TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class ProductionConfig(Config):
