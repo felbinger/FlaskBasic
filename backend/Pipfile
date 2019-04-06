@@ -16,9 +16,13 @@ requests = "*"
 flask-cors = "*"
 flask-wtf = "*"
 flask-uploads = "*"
+flask-mail = "*"
 pymysql = "*"
 marshmallow = "*"
 pyjwt = "*"
+onetimepass = "*"
+pyqrcode = "*"
+python-dateutil = "*"
 
 [dev-packages]
 pytest = "*"

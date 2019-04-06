@@ -1,4 +1,4 @@
-FROM python:3.6-alpine
+FROM python:3.7-alpine
 
 ENV MYSQL_HOSTNAME=db
 ENV MYSQL_PORT=3306
