@@ -5,6 +5,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 * API (`authentication`): 
     * Redis Blacklist: https://flask-jwt-extended.readthedocs.io/en/latest/blacklist_and_token_revoking.html
     * Refresh Tokens
+* Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session
 * Tests: add missing tests
 * Upload function for profile pictures (named by user uuid)
 * WTForms: Update dashboard/profile (validation using WTForms)
@@ -55,6 +56,7 @@ This message should only be used for debugging, not for conditions, you can use 
         ports:
           - "8080:80"
         environment:
+          MYSQL_USERNAME: root
           MYSQL_PASSWORD: root
     ```
 
@@ -67,3 +69,21 @@ This message should only be used for debugging, not for conditions, you can use 
     (2, 'user', 'User');
     ```
 * Start both container: `docker-compose up -d`
+
+#### Environment Variables
+| Key                   | Description                                | Default              |
+|-----------------------|--------------------------------------------|----------------------|
+| MYSQL_USERNAME        |                                            | flaskbasic           |
+| MYSQL_PASSWORD        |                                            | flaskbasic           |
+| MYSQL_HOSTNAME        |                                            | db                   |
+| MYSQL_PORT            |                                            | 3306                 |
+| MYSQL_DATABASE        |                                            |                      |
+| MAIL_SERVER           |                                            |                      |
+| MAIL_PORT             |                                            | 465                  |
+| MAIL_SENDER           |                                            | flaskbasic@localhost |
+| MAIL_USERNAME         |                                            |                      |
+| MAIL_PASSWORD         |                                            |                      |
+| MAIL_ENCRYPTION       | valid values: unencrypted / starttls / ssl | unencrypted          |
+| RECAPTCHA_PUBLIC_KEY  |                                            |                      |
+| RECAPTCHA_PRIVATE_KEY |                                            |                      |
+|                       |                                            |                      ||
