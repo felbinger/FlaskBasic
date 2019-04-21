@@ -35,16 +35,17 @@ class TokenForm(FlaskForm):
     token = StringField('Token')
 
 
-@require_login
 @profile.route('/profile', methods=['GET', 'POST'])
+@require_login
 def account():
-    forms = dict()
-    forms['modifyProfile'] = ProfileForm()
-    forms['changePassword'] = ChangePasswordForm()
+    forms = {
+        'modifyProfile': ProfileForm(),
+        'changePassword': ChangePasswordForm()
+    }
 
     # todo implement form validation on submit
 
-    header = {'Access-Token': session.get('Access-Token')}
+    header = {'Authorization': f'Bearer {session.get("access_token")}'}
     if request.method == 'POST':
         if request.form is not None:
             action = request.form.get('action')
@@ -90,7 +91,7 @@ def account():
 
     role = requests.get(
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
-        headers={'Access-Token': session.get('Access-Token')},
+        headers={'Authorization': f'Bearer {session.get("access_token")}'},
     ).json().get('data').get('role').get('name')
 
     data = requests.get(
@@ -105,8 +106,8 @@ def account():
 
 
 # todo redesign
-@require_login
 @profile.route('/picture/<string:public_id>')
+@require_login
 def profile_picture(public_id):
     pic = f'img/profile/{public_id}.png'
     if requests.get(f'{request.scheme}://{request.host}/static/{pic}').status_code != 200:
@@ -114,10 +115,10 @@ def profile_picture(public_id):
     return send_from_directory('static', pic)
 
 
-@require_login
 @profile.route('/profile/2fa', methods=['GET', 'POST'])
+@require_login
 def enable2fa():
-    header = {'Access-Token': session.get('Access-Token')}
+    header = {'Authorization': f'Bearer {session.get("access_token")}'}
     form = TokenForm()
     if request.method == 'POST':
         if form.token.data:

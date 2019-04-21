@@ -14,7 +14,7 @@ default = Blueprint(__name__, 'default')
 def index():
     role = requests.get(
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
-        headers={'Access-Token': session.get('Access-Token')},
+        headers={'Authorization': f'Bearer {session.get("access_token")}'},
     ).json().get('data').get('role').get('name')
     return render_template('index.html', role=role)
 

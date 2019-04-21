@@ -51,9 +51,9 @@ class ModifyRoleForm(FlaskForm):
     description = StringField('Description', id='modifyRoleDescription')
 
 
+@admin.route('/dashboard', methods=['GET', 'POST'])
 @require_login
 @require_admin
-@admin.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     forms = dict()
     forms['createAccount'] = CreateAccountForm()
@@ -61,7 +61,7 @@ def dashboard():
     forms['changePassword'] = ChangePasswordForm()
     forms['createRole'] = CreateRoleForm()
     forms['modifyRole'] = ModifyRoleForm()
-    header = {'Access-Token': session.get('Access-Token')}
+    header = {'Authorization': f'Bearer {session.get("access_token")}'}
     if request.method == 'POST':
         if request.form is not None:
             action = request.form.get('action')
@@ -208,7 +208,7 @@ def dashboard():
 
     role = requests.get(
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
-        headers={'Access-Token': session.get('Access-Token')},
+        headers={'Authorization': f'Bearer {session.get("access_token")}'},
     ).json().get('data').get('role').get('name')
 
     data = dict()

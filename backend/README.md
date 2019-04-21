@@ -4,7 +4,6 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 ### TODO
 * API (`authentication`): 
     * Redis Blacklist: https://flask-jwt-extended.readthedocs.io/en/latest/blacklist_and_token_revoking.html
-    * Refresh Tokens
 * Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session
 * Tests: add missing tests
 * Upload function for profile pictures (named by user uuid)

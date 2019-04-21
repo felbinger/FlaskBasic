@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 
 from app.db import db
 from app.api.user import User
-from ..schemas import ResultSchema
+from ..schemas import ResultSchema, ResultErrorSchema
 from .utils import require_token
-from .schemas import AuthSchema, AuthResultSchema
+from .schemas import AuthSchema, AuthResultSchema, TokenRefreshSchema
 
 
 class AuthResource(MethodView):
@@ -18,6 +18,11 @@ class AuthResource(MethodView):
         ).jsonify()
 
     def post(self):
+        """
+        Login using username, password (and 2fa token)
+        :returns: access token
+        TODO should also return refresh token
+        """
         data = request.get_json() or {}
         schema = AuthSchema()
         # use the schema to validate the submitted data
@@ -65,13 +70,65 @@ class AuthResource(MethodView):
         user.last_login = datetime.now()
         db.session.commit()
 
-        token_data = {
-            "exp": datetime.now() + timedelta(hours=current_app.config['TOKEN_VALIDITY']),
+        access_token_data = {
+            "exp": datetime.utcnow() + timedelta(minutes=current_app.config['ACCESS_TOKEN_VALIDITY']),
             "username": user.username
         }
-        token = jwt.encode(token_data, current_app.config["SECRET_KEY"]).decode()
+
+        access_token = jwt.encode(access_token_data, current_app.config["SECRET_KEY"]).decode()
+
+        refresh_token_data = {
+            "exp": datetime.utcnow() + timedelta(minutes=current_app.config['REFRESH_TOKEN_VALIDITY']),
+            "username": user.username
+        }
+
+        refresh_token = jwt.encode(refresh_token_data, current_app.config["SECRET_KEY"]).decode()
 
         return AuthResultSchema(
             message='Authentication was successfully',
-            token=token
+            access_token=access_token,
+            refresh_token=refresh_token
         ).jsonify()
+
+
+class RefreshResource(MethodView):
+    def post(self):
+        data = request.get_json() or {}
+        schema = TokenRefreshSchema()
+        error = schema.validate(data)
+        if error:
+            return AuthResultSchema(
+                message='Payload is invalid',
+                errors=error,
+                status_code=400
+            ).jsonify()
+
+        try:
+            refresh_token = data['refreshToken']
+            refresh_token_data = jwt.decode(refresh_token, current_app.config['SECRET_KEY'])
+
+            user = User.query.filter_by(username=refresh_token_data.get('username')).first()
+            if not user:
+                return ResultErrorSchema(
+                    message='User does not exist!'
+                ).jsonify()
+
+            # TODO Check if token is blacklisted
+
+            access_token_data = {
+                "exp": datetime.now() + timedelta(minutes=current_app.config['ACCESS_TOKEN_VALIDITY']),
+                "username": refresh_token_data['username']
+            }
+            new_access_token = jwt.encode(access_token_data, current_app.config["SECRET_KEY"]).decode()
+
+            return AuthResultSchema(
+                message='Token refresh was successful',
+                access_token=new_access_token
+            ).jsonify()
+        except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError, jwt.exceptions.InvalidSignatureError):
+            return ResultErrorSchema(
+                message='Invalid refresh token',
+                status_code=401
+            ).jsonify()
+
+    # TODO api for logout - blacklist delete token

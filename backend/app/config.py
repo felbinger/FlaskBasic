@@ -8,7 +8,8 @@ class Config(object):
     SECRET_KEY = 'os!zj92WqrxgdT66KLJe7BqnhgEEaM4i9h1.kN5MBYW-N42eI06SWB2FF878KiEUYF@V'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    TOKEN_VALIDITY = 2  # hours
+    ACCESS_TOKEN_VALIDITY = 15  # minutes
+    REFRESH_TOKEN_VALIDITY = 360  # minutes
     QR_SCALE = 5
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -22,7 +23,7 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}?charset=utf8mb4'
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = os.environ.get('MAIL_PORT') or 465
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_SENDER')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_SENDER') or 'flaskbasic@localhost'
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_USERNAME')
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
@@ -30,8 +31,8 @@ class ProductionConfig(Config):
 
     # encryption method (unencrypted, starttls or ssl)
     enc = os.environ.get('MAIL_ENCRYPTION') or 'unencrypted'
-    MAIL_USE_TLS = True if enc == 'starttls' else False
-    MAIL_USE_SSL = True if enc == 'ssl' else False
+    MAIL_USE_TLS = enc == 'starttls'
+    MAIL_USE_SSL = enc == 'ssl'
 
 
 class DevelopmentConfig(Config):

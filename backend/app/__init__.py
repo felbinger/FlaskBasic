@@ -4,7 +4,7 @@ from flask_cors import CORS
 
 from .api import (
     UserResource, RoleResource,
-    AuthResource, VerificationResource,
+    AuthResource, RefreshResource, VerificationResource,
     ResetResource, TwoFAResource
 )
 from .db import db
@@ -36,6 +36,8 @@ def create_app(testing_config=None) -> Flask:
 
     # register resources
     register_resource(app, AuthResource, 'auth_api', '/api/auth', get=False, put=False, delete=False)
+    register_resource(app, RefreshResource, 'refresh_api', '/api/auth/refresh',
+                      get=False, get_all=False, put=False, delete=False)
     register_resource(app, RoleResource, 'role_api', '/api/roles', pk='name', pk_type='string')
     register_resource(app, UserResource, 'user_api', '/api/users', pk='uuid', pk_type='string')
     register_resource(app, VerificationResource, 'verify_mail_api', '/api/verify', pk='token', pk_type='string',

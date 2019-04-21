@@ -46,9 +46,9 @@ def login():
                 session['username'] = form.username.data
                 session['password'] = form.password.data
                 return redirect(url_for('app.views.auth.get_2fa'))
-            elif resp.get('token'):
-                session['Access-Token'] = resp.get('token')
-                print(resp.get('token'))
+            elif resp.get('accessToken'):
+                session['access_token'] = resp.get('accessToken')
+                session['refresh_token'] = resp.get('refreshToken')
                 return redirect(url_for('app.views.default.index'))
             else:
                 flash(resp.get('message'), 'danger')
@@ -57,8 +57,8 @@ def login():
     return render_template('login.html', form=form)
 
 
-@require_logout
 @auth.route('/get2fa', methods=['GET', 'POST'])
+@require_logout
 def get_2fa():
     form = TOTPForm()
     if form.validate_on_submit():
@@ -71,7 +71,7 @@ def get_2fa():
             }
         ).json()
         if resp.get('token'):
-            session['Access-Token'] = resp.get('token')
+            session['access_token'] = resp.get('token')
             print(resp.get('token'))
             del session['username']
             del session['password']
@@ -81,11 +81,11 @@ def get_2fa():
     return render_template('get2FAToken.html', form=form)
 
 
-@require_login
 @auth.route('/logout')
+@require_login
 def logout():
     # todo contact redis server to make token invalid
-    session['Access-Token'] = None
+    session['access_token'] = None
     return redirect(url_for('app.views.auth.login'), code=302)
 
 

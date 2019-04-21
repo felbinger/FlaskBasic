@@ -7,18 +7,22 @@ def require_login(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
         # check if access token exist
-        if session.get('Access-Token'):
+        if session.get('access_token'):
             # check if access token is still valid
             resp = requests.get(
                 f'{request.scheme}://{request.host}{url_for("auth_api")}',
-                headers={'Access-Token': session.get('Access-Token')}
+                headers={'Authorization': f'Bearer {session.get("access_token")}'}
             )
             if resp.status_code != 200:
-                # invalid token
-                return redirect(url_for('app.views.auth.login'))
-            else:
-                # token is valid
-                return view_func(*args, **kwargs)
+                resp = requests.post(
+                    f'{request.scheme}://{request.host}{url_for("refresh_api")}',
+                    json={'refreshToken': session.get("refresh_token")}
+                )
+                if resp.status_code != 200:
+                    return redirect(url_for('app.views.auth.login'))
+
+                session["access_token"] = resp.json().get("accessToken")
+            return view_func(*args, **kwargs)
         else:
             return redirect(url_for('app.views.auth.login'))
     return wrapper
@@ -27,7 +31,7 @@ def require_login(view_func):
 def require_logout(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        if session.get('Access-Token'):
+        if session.get('access_token', '').startswith('Bearer '):
             return redirect(url_for('app.views.default.index'))
         else:
             return view_func(*args, **kwargs)
@@ -37,7 +41,7 @@ def require_logout(view_func):
 def require_admin(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        headers = {'Access-Token': session.get('Access-Token')}
+        headers = {'Authorization': f'Bearer {session.get("access_token")}'}
         resp = requests.get(
             f'{request.scheme}://{request.host}{url_for("auth_api")}',
             headers=headers

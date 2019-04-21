@@ -7,19 +7,20 @@ from ..schemas import ResultErrorSchema
 
 def require_token(view_func):
     def wrapper(*args, **kwargs):
-        access_token = request.headers.get('Access-Token')
-        if not access_token:
+        access_token = request.headers.get('Authorization')
+        if not access_token or not access_token.startswith("Bearer "):
             return ResultErrorSchema(
-                message='Missing Access-Token',
+                message='Missing access token',
                 status_code=401
             ).jsonify()
         try:
+            access_token = access_token.split(" ")[1]
             token = jwt.decode(access_token, current_app.config['SECRET_KEY'])
             user = User.query.filter_by(username=token.get('username')).first()
             return view_func(*args, **kwargs, user=user)
         except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError, jwt.exceptions.InvalidSignatureError):
             return ResultErrorSchema(
-                message='Invalid Access-Token',
+                message='Invalid access token',
                 status_code=401
             ).jsonify()
     return wrapper
