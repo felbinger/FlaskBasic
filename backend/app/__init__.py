@@ -33,7 +33,7 @@ def create_app(testing_config=None) -> Flask:
 
     # initialize blacklist
     if type(blacklist) == RedisBlacklist:
-        blacklist.conn.init_app(app)
+        blacklist.blacklist.init_app(app)
 
     with app.app_context():
         # create tables
