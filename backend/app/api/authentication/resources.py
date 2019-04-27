@@ -3,6 +3,7 @@ from flask import request, current_app
 import jwt
 from datetime import datetime, timedelta
 
+from app.blacklist import blacklist
 from app.db import db
 from app.api.user import User
 from ..schemas import ResultSchema, ResultErrorSchema
@@ -105,16 +106,23 @@ class RefreshResource(MethodView):
 
         try:
             refresh_token = data['refreshToken']
+
+            # check if refresh token has been blacklisted
+            if blacklist.check(refresh_token):
+                return ResultSchema(
+                    data='Invalid refresh token',
+                    status_code=401
+                ).jsonify()
+
             refresh_token_data = jwt.decode(refresh_token, current_app.config['SECRET_KEY'])
 
-            user = User.query.filter_by(username=refresh_token_data.get('username')).first()
-            if not user:
+            # check if the user still exists (could have been delete in the meantime)
+            if not User.query.filter_by(username=refresh_token_data.get('username')).first():
                 return ResultErrorSchema(
                     message='User does not exist!'
                 ).jsonify()
 
-            # TODO Check if token is blacklisted
-
+            # generate new access token
             access_token_data = {
                 "exp": datetime.now() + timedelta(minutes=current_app.config['ACCESS_TOKEN_VALIDITY']),
                 "username": refresh_token_data['username']
@@ -131,4 +139,15 @@ class RefreshResource(MethodView):
                 status_code=401
             ).jsonify()
 
-    # TODO api for logout - blacklist delete token
+    def delete(self, token):
+        if not blacklist.check(token):
+            blacklist.add(token)
+            return ResultSchema(
+                data='Successfully blacklisted token',
+                status_code=200
+            ).jsonify()
+        else:
+            return ResultSchema(
+                data='Invalid refresh token',
+                status_code=401
+            ).jsonify()

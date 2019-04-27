@@ -7,6 +7,7 @@ from .api import (
     AuthResource, RefreshResource, VerificationResource,
     ResetResource, TwoFAResource
 )
+from .blacklist import blacklist, RedisBlacklist
 from .db import db
 from .config import ProductionConfig, DevelopmentConfig
 from .views import default, admin, profile, auth
@@ -30,14 +31,18 @@ def create_app(testing_config=None) -> Flask:
     db.init_app(app)
     register_models()
 
+    # initialize blacklist
+    if type(blacklist) == RedisBlacklist:
+        blacklist.conn.init_app(app)
+
     with app.app_context():
         # create tables
         db.create_all()
 
     # register resources
     register_resource(app, AuthResource, 'auth_api', '/api/auth', get=False, put=False, delete=False)
-    register_resource(app, RefreshResource, 'refresh_api', '/api/auth/refresh',
-                      get=False, get_all=False, put=False, delete=False)
+    register_resource(app, RefreshResource, 'refresh_api', '/api/auth/refresh', pk='token', pk_type='string',
+                      get=False, get_all=False, put=False)
     register_resource(app, RoleResource, 'role_api', '/api/roles', pk='name', pk_type='string')
     register_resource(app, UserResource, 'user_api', '/api/users', pk='uuid', pk_type='string')
     register_resource(app, VerificationResource, 'verify_mail_api', '/api/verify', pk='token', pk_type='string',

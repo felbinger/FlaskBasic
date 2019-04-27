@@ -3,7 +3,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 
 ### TODO
 * API (`authentication`): 
-    * Redis Blacklist: https://flask-jwt-extended.readthedocs.io/en/latest/blacklist_and_token_revoking.html
+    * test Redis Blacklist
 * Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session
 * Tests: add missing tests
 * Upload function for profile pictures (named by user uuid)
@@ -30,8 +30,8 @@ This message should only be used for debugging, not for conditions, you can use 
   ```
 * Parameters may be sent in any order.
 
-* Login token's are passed into the Rest API via the `Access-Token` header.
-* Login token's and password's are **case sensitive**.
+* Access token's are passed into the Rest API via the `Authorisation` header.
+* Token's and password's are **case sensitive**.
 
 ### Run FlaskBasic
 * Define your container in the file `docker-compose.yml`:
@@ -47,6 +47,12 @@ This message should only be used for debugging, not for conditions, you can use 
           MYSQL_DATABASE: flaskbasic
         volumes:
           - "/srv/mysql:/var/lib/mysql"
+          
+      redis:
+        image: redis
+        restart: always
+        volumes:
+          - /srv/redis:/data
           
       flaskbasic:
         image: nicof2000/flaskbasic

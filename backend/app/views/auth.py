@@ -84,7 +84,14 @@ def get_2fa():
 @auth.route('/logout')
 @require_login
 def logout():
-    # todo contact redis server to make token invalid
+    # add refresh token to blacklist
+    resp = requests.delete(
+        f'{request.scheme}://{request.host}{url_for("refresh_api")}/{session["refresh_token"]}'
+    )
+    if resp.status_code != 200:
+        print("Unable to blacklist refresh token!")
+        print(resp.json())
+    session['refresh_token'] = None
     session['access_token'] = None
     return redirect(url_for('app.views.auth.login'), code=302)
 

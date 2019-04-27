@@ -34,6 +34,13 @@ class ProductionConfig(Config):
     MAIL_USE_TLS = enc == 'starttls'
     MAIL_USE_SSL = enc == 'ssl'
 
+    # redis configuration to blacklist refresh tokens
+    host = os.environ.get('REDIS_HOSTNAME')
+    port = os.environ.get('REDIS_PORT') or 6379
+    password = os.environ.get('REDIS_PASSWORD') or ''
+    db = os.environ.get('REDIS_DATABASE') or '0'
+    REDIS_URL = f'redis://:{password}@{host}:{port}/{database}'
+
 
 class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:root@localhost:9999/flaskbasic?charset=utf8mb4'
