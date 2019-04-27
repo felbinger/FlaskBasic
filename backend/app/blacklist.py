@@ -4,25 +4,26 @@ from flask_redis import FlaskRedis
 
 class RedisBlacklist:
     def __init__(self):
-        self.conn = FlaskRedis()
+        self.blacklist = FlaskRedis()
 
     def add(self, token):
-        self.conn.sadd('blacklist', token)
+        self.blacklist.sadd('blacklist', token)
         pass
 
     def check(self, token):
-        return self.conn.smembers(token)
+        return self.blacklist.smembers(token)
 
 
 class SetBlacklist:
     def __init__(self):
-        self.data = set()
+        self.blacklist = set()
 
     def add(self, token):
-        self.data.add(token)
+        self.blacklist.add(token)
 
     def check(self, token):
-        return token in self.data
+        return token in self.blacklist
 
 
-blacklist = RedisBlacklist() if os.environ.get('FLASK_ENV') == 'productive' else SetBlacklist()
+# todo what about testing config? - should be also a setblacklist
+blacklist = SetBlacklist() if os.environ.get('FLASK_ENV') == 'development' else RedisBlacklist()

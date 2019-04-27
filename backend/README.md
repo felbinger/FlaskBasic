@@ -2,8 +2,6 @@
 This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https://blackrockdigital.github.io/startbootstrap-sb-admin/index.html).
 
 ### TODO
-* API (`authentication`): 
-    * test Redis Blacklist
 * Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session
 * Tests: add missing tests
 * Upload function for profile pictures (named by user uuid)
@@ -39,8 +37,7 @@ This message should only be used for debugging, not for conditions, you can use 
     version: '3'
     services:
       db:
-        image: mysql:5.7
-        container_name: root_db_1
+        image: mariadb
         restart: always
         environment:
           MYSQL_ROOT_PASSWORD: root
@@ -56,7 +53,6 @@ This message should only be used for debugging, not for conditions, you can use 
           
       flaskbasic:
         image: nicof2000/flaskbasic
-        container_name: root_flaskbasic_1
         restart: always
         ports:
           - "8080:80"
@@ -65,7 +61,6 @@ This message should only be used for debugging, not for conditions, you can use 
           MYSQL_PASSWORD: root
     ```
 
-* Add database web (in this example automatically)
 * Change database collection from `latin1_swedish_ci` to `utf8mb4_unicode_ci`
 * Execute the following sql:
     ```sql
@@ -91,4 +86,8 @@ This message should only be used for debugging, not for conditions, you can use 
 | MAIL_ENCRYPTION       | valid values: unencrypted / starttls / ssl | unencrypted          |
 | RECAPTCHA_PUBLIC_KEY  |                                            |                      |
 | RECAPTCHA_PRIVATE_KEY |                                            |                      |
+| REDIS_HOSTNAME        |                                            | redis                |
+| REDIS_PORT            |                                            | 6379                 |
+| REDIS_PASSWORD        |                                            |                      |
+| REDIS_DATABASE        |                                            | 0                    |
 |                       |                                            |                      ||
