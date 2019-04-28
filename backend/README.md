@@ -3,10 +3,11 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 
 ### TODO
 * Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session
-* Tests: add missing tests
-* Upload function for profile pictures (named by user uuid)
+* Tests: Add missing test cases
 * WTForms: Update dashboard/profile (validation using WTForms)
-* Messaging System
+* Features:
+  * Profile Picture Upload
+  * Messaging System
 
 ### API Information
 * The base endpoint is: [http://localhost:5000/](http://localhost:5000/)

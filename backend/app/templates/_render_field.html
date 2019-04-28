@@ -21,8 +21,10 @@
 {% endmacro %}
 {% macro render_select_field(field) %}
 <div class="form-group">
-    <label for="{{ field.id }}">{{ field.label.text }}</label>
-    {{ field(class_='form-control', **kwargs)|safe }}
+    <div class="role-wrapper select-wrapper">
+        <span class="role-label">{{ field.label.text }}</span>
+        {{ field(class_='form-control d-inline-block role-select', **kwargs)|safe }}
+    </div>
 </div>
 {% endmacro %}
 {% macro render_hidden_field(field) %}

@@ -32,7 +32,7 @@ def create_app(testing_config=None) -> Flask:
     register_models()
 
     # initialize blacklist
-    if type(blacklist) == RedisBlacklist:
+    if isinstance(blacklist, RedisBlacklist):
         blacklist.blacklist.init_app(app)
 
     with app.app_context():
@@ -45,11 +45,11 @@ def create_app(testing_config=None) -> Flask:
                       get=False, get_all=False, put=False)
     register_resource(app, RoleResource, 'role_api', '/api/roles', pk='name', pk_type='string')
     register_resource(app, UserResource, 'user_api', '/api/users', pk='uuid', pk_type='string')
-    register_resource(app, VerificationResource, 'verify_mail_api', '/api/verify', pk='token', pk_type='string',
+    register_resource(app, VerificationResource, 'verify_mail_api', '/api/users/verify', pk='token', pk_type='string',
                       get=False, get_all=False, post=False, delete=False)
     register_resource(app, ResetResource, 'password_reset_api', '/api/reset', pk='token', pk_type='string',
                       get=False, get_all=False, delete=False)
-    register_resource(app, TwoFAResource, 'two_factor_api', '/api/2fa', get=False, put=False, delete=False)
+    register_resource(app, TwoFAResource, 'two_factor_api', '/api/users/2fa', get=False, put=False, delete=False)
 
     # register views
     app.register_blueprint(default)
