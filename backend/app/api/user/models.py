@@ -27,7 +27,7 @@ class User(db.Model):
     code_viewed = Column('2fa_qr_viewed', Boolean, nullable=False, default=False)
 
     def __init__(self, *args, **kwargs):
-        kwargs['password'] = generate_password_hash(kwargs['password'], method='sha512')
+        kwargs['_password'] = generate_password_hash(kwargs['password'], method='sha512')
         super().__init__(*args, **kwargs, public_id=str(uuid4()))
 
     def jsonify(self):

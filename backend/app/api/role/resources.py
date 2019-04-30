@@ -109,4 +109,7 @@ class RoleResource(MethodView):
                 ).jsonify()
         db.session.delete(role)
         db.session.commit()
-        return 'Successfully deleted role!', 200
+        return ResultSchema(
+            data='Successfully deleted role!',
+            status_code=200
+        ).jsonify()

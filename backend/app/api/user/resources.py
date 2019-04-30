@@ -107,7 +107,7 @@ class UserResource(MethodView):
             schema = DaoUpdateUserSchema()
             data = request.get_json()
             data, error = schema.load(data)
-            if error:
+            if error or not data or not data.items():
                 return ResultErrorSchema(
                     message='Payload is invalid',
                     errors=error,
@@ -118,11 +118,13 @@ class UserResource(MethodView):
                     message='You are not allowed to change your role!',
                     status_code=403
                 ).jsonify()
+
             totp_secret = None
             totp_deactivation_token = None
             if 'totp_token' in data:
                 totp_deactivation_token = data.get('totp_token')
                 del data['totp_token']
+
             for key, val in data.items():
                 if key == 'totp_enabled':
                     if val:
@@ -149,6 +151,7 @@ class UserResource(MethodView):
                                 ).jsonify()
                 else:
                     setattr(user, key, val)
+
             db.session.commit()
             # if a new secret has been created, add it to the data for 2fa activation process
             data = user.jsonify()
@@ -171,6 +174,11 @@ class UserResource(MethodView):
         Delete an existing account (only with valid public_id not with 'me')
         """
         user = User.query.filter_by(public_id=uuid).first()
+        if not user:
+            return ResultErrorSchema(
+                message='User does not exist',
+                status_code=404
+            ).jsonify()
         db.session.delete(user)
         db.session.commit()
         return ResultSchema(
@@ -182,7 +190,7 @@ class UserResource(MethodView):
         schema = DaoUpdateUserSchema()
         data = request.get_json()
         data, error = schema.load(data)
-        if error:
+        if error or not data or not data.items():
             return ResultErrorSchema(
                 message='Payload is invalid',
                 errors=error,
