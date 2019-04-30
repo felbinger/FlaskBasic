@@ -2,138 +2,70 @@ from app.api import Role, User
 import json
 
 
-# method to add default roles to database
-def generate_default(app, client):
-    db = client.db
-    with app.app_context():
-        if len(Role.query.all()) < 2:
+class Utils:
+    def __init__(self, app, client):
+        self.app = app
+        self.client = client
+        self.db = client.db
+
+        with self.app.app_context():
             if not Role.query.filter_by(name="admin").first():
-                admin = Role(
+                admin_role = Role(
                     name="admin",
                     description="Administrator"
                 )
-                db.session.add(admin)
+                self.db.session.add(admin_role)
+                if not User.query.filter_by(username="administrator").first():
+                    admin_user = User(
+                        username='administrator',
+                        email='administrator@example.com',
+                        verified=True,
+                        password='password_for_administrator',
+                        role=admin_role,
+                        totp_enabled=False
+                    )
+                    self.db.session.add(admin_user)
             if not Role.query.filter_by(name="user").first():
-                user = Role(
+                user_role = Role(
                     name="user",
                     description="User"
                 )
-                db.session.add(user)
-            db.session.commit()
+                self.db.session.add(user_role)
+                if not User.query.filter_by(username="test").first():
+                    normal_user = User(
+                        username='test',
+                        email='test@example.com',
+                        verified=True,
+                        password='password_for_test',
+                        role=user_role,
+                        totp_enabled=False
+                    )
+                    self.db.session.add(normal_user)
+            self.db.session.commit()
 
+    # generate an access token with admin privileges
+    def generate_admin_access_token(self, username='administrator', password='password_for_administrator'):
+        return self.generate_access_token(username, password)
 
-# method to create dummy user with role admin
-def create_dummy_admin(app, client, name='test'):
-    db = client.db
-    with app.app_context():
-        generate_default(app, client)
-        role = Role.query.filter_by(name="admin").first()
-        if not role:
-            role = Role(name='admin', description='Administrator')
-        user = User.query.filter_by(username=name).first()
-        if not user:
-            user = User(
-                username=name,
-                password=name,
-                email=f'{name}@{name}.com',
-                role=role
-            )
-        user.verified = True
-        db.session.add(role)
-        db.session.add(user)
-        db.session.commit()
-        return user.public_id
+    # generate an session with admin privileges
+    def generate_admin_session(self, username='administrator', password='password_for_administrator'):
+        return self.generate_session(username, password)
 
+    def generate_access_token(self, username='test', password='password_for_test'):
+        with self.app.app_context():
+            resp = self.client.post('/api/auth', json={'username': username, 'password': password})
+            return json.loads(resp.data.decode()).get('accessToken')
 
-# method to create dummy user with role admin
-def create_dummy_user(app, client, name='test'):
-    db = client.db
-    with app.app_context():
-        generate_default(app, client)
-        role = Role.query.filter_by(name="user").first()
-        if not role:
-            role = Role(name='user', description='User')
-        user = User.query.filter_by(username=name).first()
-        if not user:
-            user = User(
-                username=name,
-                email=f'{name}@{name}.com',
-                password=name,
-                role=role
-            )
-        user.verified = True
-        db.session.add(role)
-        db.session.add(user)
-        db.session.commit()
-        return user.public_id
+    def generate_session(self, username='test', password='password_for_test'):
+        with self.app.app_context():
+            resp = self.client.post('/login', data={'username': username, 'password': password})
+            print(resp.data)
+            assert resp.status_code == 302  # expect redirect to another page
+            assert 'session=' in resp.headers['Set-Cookie']
+            session_cookie = resp.headers['Set-Cookie'].rsplit("=")[1].rsplit(";")[0]
+            return str(session_cookie)
 
-
-# method to get admin access-token
-def get_admin_token(app, client):
-    with app.app_context():
-        generate_default(app, client)
-        role = Role.query.filter_by(name="admin").first()
-        if not role:
-            role = Role(name='admin', description='Administrator')
-        user = User.query.filter_by(username='test').first()
-        if not user:
-            user = User(
-                username='test',
-                email='test@test.de',
-                password='test',
-                role=role
-            )
-        db = client.db
-        user.verified = True
-        db.session.add(role)
-        db.session.add(user)
-        db.session.commit()
-    resp = client.post('/api/auth', json={'username': 'test', 'password': 'test'})
-    data = json.loads(resp.data.decode())
-    return data.get('token')
-
-
-# method to get admin access-token
-def get_user_token(app, client):
-    with app.app_context():
-        generate_default(app, client)
-        role = Role.query.filter_by(name="user").first()
-        if not role:
-            role = Role(name='user', description='User')
-        user = User.query.filter_by(username='test').first()
-        if not user:
-            user = User(
-                username='test',
-                email='test@test.com',
-                password='test',
-                role=role
-            )
-        db = client.db
-        user.verified = True
-        db.session.add(role)
-        db.session.add(user)
-        db.session.commit()
-    resp = client.post('/api/auth', json={'username': 'test', 'password': 'test'})
-    data = json.loads(resp.data.decode())
-    return data.get('token')
-
-
-def create_dummy_role(app, client, name):
-    role = Role(name=name, description='test')
-    db = client.db
-    with app.app_context():
-        db.session.add(role)
-        db.session.commit()
-    return role
-
-
-# generate a session (token in a cookie) for an non admin user
-def generate_user_session(app, client):
-    with app.app_context():
-        create_dummy_user(app, client)
-        resp = client.post('/login', data={'username': 'test', 'password': 'test'})
-        assert resp.status_code == 302  # expect redirect to another page
-        assert 'session=' in resp.headers['Set-Cookie']
-        session_cookie = resp.headers['Set-Cookie'].rsplit("=")[1].rsplit(";")[0]
-        return str(session_cookie)
-
+    def get_public_id(self, username='test'):
+        with self.app.app_context():
+            user = User.query.filter_by(username=username).first()
+            return user.public_id
