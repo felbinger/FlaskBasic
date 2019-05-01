@@ -15,7 +15,7 @@ def require_token(view_func):
             ).jsonify()
         try:
             access_token = access_token.split(" ")[1]
-            token = jwt.decode(access_token, current_app.config['SECRET_KEY'])
+            token = jwt.decode(access_token, current_app.config['SECRET_KEY'], algorithms='HS256')
             user = User.query.filter_by(username=token.get('username')).first()
             return view_func(*args, **kwargs, user=user)
         except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError, jwt.exceptions.InvalidSignatureError):

@@ -21,8 +21,6 @@ class AuthResource(MethodView):
     def post(self):
         """
         Login using username, password (and 2fa token)
-        :returns: access token
-        TODO should also return refresh token
         """
         data = request.get_json() or {}
         schema = AuthSchema()
@@ -40,7 +38,7 @@ class AuthResource(MethodView):
         # Check if the user exists, if the submitted password is correct
         if not user or not user.verify_password(data.get('password')):
             return AuthResultSchema(
-                message='Wrong credentials',
+                message='Invalid credentials',
                 status_code=401
             ).jsonify()
         # check if the account (email address) is verified
@@ -57,7 +55,7 @@ class AuthResource(MethodView):
                 if not user.verify_totp(data.get('token')):
                     # @Security: (read next note first): this message could be exchanged through 2fa token invalid
                     return AuthResultSchema(
-                        message='Wrong credentials',
+                        message='Invalid credentials',
                         status_code=401
                     ).jsonify()
             else:
@@ -94,6 +92,9 @@ class AuthResource(MethodView):
 
 class RefreshResource(MethodView):
     def post(self):
+        """
+        Generate a new access token, using a - not blacklisted - refresh token
+        """
         data = request.get_json() or {}
         schema = TokenRefreshSchema()
         error = schema.validate(data)
@@ -114,7 +115,7 @@ class RefreshResource(MethodView):
                     status_code=401
                 ).jsonify()
 
-            refresh_token_data = jwt.decode(refresh_token, current_app.config['SECRET_KEY'])
+            refresh_token_data = jwt.decode(refresh_token, current_app.config['SECRET_KEY'], algorithms='HS256')
 
             # check if the user still exists (could have been delete in the meantime)
             if not User.query.filter_by(username=refresh_token_data.get('username')).first():
@@ -140,6 +141,9 @@ class RefreshResource(MethodView):
             ).jsonify()
 
     def delete(self, token):
+        """
+        Add a refresh token to the blacklist
+        """
         if not blacklist.check(token):
             blacklist.add(token)
             return ResultSchema(
