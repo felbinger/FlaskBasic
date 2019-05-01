@@ -70,9 +70,10 @@ def get_2fa():
                 'token': form.token.data
             }
         ).json()
-        if resp.get('token'):
-            session['access_token'] = resp.get('token')
-            print(resp.get('token'))
+
+        if resp.get('accessToken'):
+            session['access_token'] = resp.get('accessToken')
+            session['refresh_token'] = resp.get('refreshToken')
             del session['username']
             del session['password']
             return redirect(url_for('app.views.default.index'))

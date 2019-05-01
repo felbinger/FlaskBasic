@@ -1,7 +1,7 @@
 from flask import (
     Blueprint, render_template,
     request, session,
-    url_for, flash
+    url_for, flash, current_app
 )
 from flask_wtf import FlaskForm
 from wtforms import (
@@ -10,6 +10,7 @@ from wtforms import (
     HiddenField
 )
 from wtforms.validators import DataRequired
+from dateutil.parser import parse
 import requests
 
 from .utils import require_login, require_admin
@@ -220,6 +221,14 @@ def dashboard():
         f'{request.scheme}://{request.host}{url_for("role_api")}',
         headers=header
     ).json().get('data')
+
+    # add roles to dropdown menus
     forms['createAccount'].role.choices = [(e.get('name'), e.get('description')) for e in data['roles']]
     forms['modifyAccount'].role.choices = [(e.get('name'), e.get('description')) for e in data['roles']]
+
+    # reformat timestamps
+    for account in data['accounts']:
+        account['lastLogin'] = parse(account['lastLogin']).strftime(current_app.config['TIME_FORMAT'])
+        account['created'] = parse(account['created']).strftime(current_app.config['TIME_FORMAT'])
+
     return render_template('dashboard.html', data=data, role=role, forms=forms), 200
