@@ -35,11 +35,12 @@ class ProductionConfig(Config):
     MAIL_USE_SSL = enc == 'ssl'
 
     # redis configuration to blacklist refresh tokens
-    host = os.environ.get('REDIS_HOSTNAME')
-    port = os.environ.get('REDIS_PORT') or 6379
-    password = os.environ.get('REDIS_PASSWORD') or ''
-    db = os.environ.get('REDIS_DATABASE') or '0'
-    REDIS_URL = f'redis://:{password}@{host}:{port}/{database}'
+    redis_host = os.environ.get('REDIS_HOSTNAME')
+    redis_port = os.environ.get('REDIS_PORT') or 6379
+    redis_password = os.environ.get('REDIS_PASSWORD') or ''
+    redis_db = os.environ.get('REDIS_DATABASE')
+    redis_base = f'{redis_host}:{redis_port}/{redis_db}'
+    REDIS_URL = f'redis://:{redis_password}@{redis_base}' if redis_password else f'redis://{redis_base}'
 
 
 class DevelopmentConfig(Config):
