@@ -3,7 +3,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 
 ### TODO
 * Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session
-* Tests: Add missing test cases (totp, mail, views)
+* Tests: Add missing test cases (refresh tokens, totp, mail, views)
 * WTForms: Update dashboard/profile (validation using WTForms)
 * Features:
   * Profile Picture Upload

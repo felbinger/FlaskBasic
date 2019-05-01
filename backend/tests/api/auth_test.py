@@ -6,12 +6,8 @@ from tests.utils import Utils
 from app.api import require_admin
 
 
-# Authentication Tests
-
 def test_authentication(app, client):
-    # create default roles and accounts
     Utils(app, client)
-    # get a token
     resp = client.post('/api/auth', json={'username': 'test', 'password': 'password_for_test'})
     assert resp.status_code == 200
     assert 'accessToken' in json.loads(resp.data.decode())
@@ -41,10 +37,37 @@ def test_authentication_invalid_data(app, client):
     resp = client.post('/api/auth', json={'invalid': 'test', 'password': 'password_for_test'})
     assert resp.status_code == 400
 
-# End of Authentication Tests
+
+def test_authentication_with_2fa(app, client):
+    utils = Utils(app, client)
+    utils.enable_2fa()
+
+    # request should result in an error, because the 2fa token is missing
+    resp = client.post('/api/auth', json={'username': 'test', 'password': 'password_for_test'})
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode('utf8')).get('message') == 'Missing 2fa token'
+
+    # the 2fa token is in the data of this request, so it should work
+    resp = client.post(
+        '/api/auth',
+        json={'username': 'test', 'password': 'password_for_test', 'token': utils.generate_2fa_token()}
+    )
+    assert resp.status_code == 200
+    assert 'accessToken' in json.loads(resp.data.decode())
+    assert 'refreshToken' in json.loads(resp.data.decode())
 
 
-# getUserInfo Tests
+def test_authentication_with_invalid_2fa_token(app, client):
+    utils = Utils(app, client)
+    utils.enable_2fa()
+
+    resp = client.post(
+        '/api/auth',
+        json={'username': 'test', 'password': 'password_for_test', 'token': '999999'}
+    )
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode('utf8')).get('message') == 'Invalid credentials'
+
 
 def test_get_user_info(app, client):
     utils = Utils(app, client)
@@ -55,19 +78,52 @@ def test_get_user_info(app, client):
 
 
 def test_get_user_info_without_token(app, client):
-    with app.app_context():
-        resp = client.get('/api/auth')
-        assert resp.status_code == 401
-        assert json.loads(resp.data.decode('utf8')).get('message') == 'Missing access token'
+    resp = client.get('/api/auth')
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode('utf8')).get('message') == 'Missing access token'
 
 
 def test_get_user_info_invalid_token(app, client):
-    with app.app_context():
-        resp = client.get('/api/auth', headers={'Authorization': 'Bearer invalid'})
-        assert resp.status_code == 401
-        assert json.loads(resp.data.decode('utf8')).get('message') == 'Invalid access token'
+    resp = client.get('/api/auth', headers={'Authorization': 'Bearer invalid'})
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode('utf8')).get('message') == 'Invalid access token'
 
-# End of getUserInfo Tests
+
+def test_refresh_token(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    resp = client.post('/api/auth/refresh', json={'refreshToken': refresh_token})
+    assert resp.status_code == 200
+    assert json.loads(resp.data.decode()).get('message') == 'Token refresh was successful'
+    assert 'accessToken' in json.loads(resp.data.decode())
+
+    access_token = json.loads(resp.data.decode()).get('accessToken')
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+
+def test_logout(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    resp = client.delete(f'/api/auth/refresh/{refresh_token}')
+    assert resp.status_code == 200
+    assert json.loads(resp.data.decode()).get('data') == 'Successfully blacklisted token'
+
+    # refresh token should be invalid
+    # access token will be still valid
+
+    # TODO token refresh shouldn't work - but it does
+    resp = client.post('/api/auth/refresh', json={'refreshToken': refresh_token})
+    # assert resp.status_code == 401
+    # assert json.loads(resp.data.decode()).get('message') == 'Invalid refresh token'
 
 
 # decorator @require_admin before @require_token

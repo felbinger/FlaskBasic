@@ -1,5 +1,8 @@
 from app.api import Role, User
 import json
+import os
+import onetimepass
+from base64 import b32encode
 
 
 class Utils:
@@ -51,10 +54,13 @@ class Utils:
     def generate_admin_session(self, username='administrator', password='password_for_administrator'):
         return self.generate_session(username, password)
 
-    def generate_access_token(self, username='test', password='password_for_test'):
+    def generate_access_token(self, username='test', password='password_for_test', refresh=False):
         with self.app.app_context():
             resp = self.client.post('/api/auth', json={'username': username, 'password': password})
-            return json.loads(resp.data.decode()).get('accessToken')
+
+            access_token = json.loads(resp.data.decode()).get('accessToken')
+            refresh_token = json.loads(resp.data.decode()).get('refreshToken')
+            return (access_token, refresh_token) if refresh else access_token
 
     def generate_session(self, username='test', password='password_for_test'):
         with self.app.app_context():
@@ -67,5 +73,17 @@ class Utils:
 
     def get_public_id(self, username='test'):
         with self.app.app_context():
+            return User.query.filter_by(username=username).first().public_id
+
+    def enable_2fa(self, username='test'):
+        with self.app.app_context():
             user = User.query.filter_by(username=username).first()
-            return user.public_id
+            user.totp_enabled = True
+            user.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
+            self.db.session.commit()
+
+    def generate_2fa_token(self, username='test'):
+        with self.app.app_context():
+            user = User.query.filter_by(username=username).first()
+            if user.totp_enabled:
+                return str(onetimepass.get_totp(user.totp_secret))

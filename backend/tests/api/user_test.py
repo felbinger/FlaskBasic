@@ -1,6 +1,7 @@
 from tests.utils import Utils
 
 import json
+import onetimepass
 
 
 def test_create(app, client):
@@ -110,6 +111,33 @@ def test_admin_update_invalid_data(app, client):
     assert resp.status_code == 400
 
 
+def test_admin_update_enable_2fa(app, client):
+    utils = Utils(app, client)
+    public_id = utils.get_public_id()
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    resp = client.put(f'/api/users/{public_id}', headers=headers, json={'totp_enabled': True})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'You are not allowed to enable 2FA.'
+
+
+def test_admin_update_disable_2fa(app, client):
+    utils = Utils(app, client)
+    utils.enable_2fa()
+    public_id = utils.get_public_id()
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+
+    # check if 2fa is enabled
+    resp = client.get(f'/api/users/{public_id}', headers=headers)
+    assert json.loads(resp.data.decode()).get('data').get('2fa')
+
+    # disable 2fa
+    resp = client.put(f'/api/users/{public_id}', headers=headers, json={'totp_enabled': False})
+    assert resp.status_code == 200
+    assert not json.loads(resp.data.decode()).get('data').get('2fa')
+
+
 def test_update(app, client):
     utils = Utils(app, client)
 
@@ -134,6 +162,30 @@ def test_update_invalid_data(app, client):
     headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
     resp = client.put('/api/users/me', headers=headers, json={'invalid': 'invalid'})
     assert resp.status_code == 400
+
+
+def test_update_enable_2fa(app, client):
+    utils = Utils(app, client)
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    # first step to enable 2fa, get secret key
+    resp = client.put('/api/users/me', headers=headers, json={'totp_enabled': True})
+    assert resp.status_code == 200
+    assert not json.loads(resp.data.decode()).get('data').get('2fa')
+    assert '2fa_secret' in json.loads(resp.data.decode()).get('data')
+
+    # generate a 2fa token using the secret key, and use it to activate 2fa
+    secret = json.loads(resp.data.decode()).get('data').get('2fa_secret')
+    totp_token = str(onetimepass.get_totp(secret)).zfill(6)
+    resp = client.post('/api/users/2fa', headers=headers, json={'token': str(totp_token)})
+    assert resp.status_code == 200
+    assert json.loads(resp.data.decode()).get('message') == '2fa has been enabled'
+
+    # it should not be possible to generate the qr code after 2fa has been enabled
+    # this would be a potential security vulnerability
+    resp = client.get('/api/users/2fa', headers=headers)
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'Unable to generate QR Code'
 
 
 def test_delete(app, client):
