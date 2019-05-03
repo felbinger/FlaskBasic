@@ -228,7 +228,9 @@ def dashboard():
 
     # reformat timestamps
     for account in data['accounts']:
-        account['lastLogin'] = parse(account['lastLogin']).strftime(current_app.config['TIME_FORMAT'])
         account['created'] = parse(account['created']).strftime(current_app.config['TIME_FORMAT'])
+        # could be nothing
+        if account['lastLogin']:
+            account['lastLogin'] = parse(account['lastLogin']).strftime(current_app.config['TIME_FORMAT'])
 
     return render_template('dashboard.html', data=data, role=role, forms=forms), 200

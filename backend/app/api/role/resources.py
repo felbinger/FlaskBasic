@@ -1,5 +1,6 @@
 from flask.views import MethodView
 from flask import request
+from marshmallow.exceptions import ValidationError
 
 from app.db import db
 from ..user import User
@@ -32,21 +33,23 @@ class RoleResource(MethodView):
     @require_token
     @require_admin
     def post(self, **_):
-        data = request.get_json() or {}
         schema = DaoCreateRoleSchema()
-        error = schema.validate(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return ResultErrorSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
-        for role in Role.query.all():
-            if data.get('name') == role.name:
-                return ResultErrorSchema(
-                    message='Name already in use!',
-                    status_code=400
-                ).jsonify()
+
+        if Role.query.filter_by(name=data.get('name')).first():
+            return ResultErrorSchema(
+                message='Name already in use!',
+                status_code=400
+            ).jsonify()
+
         role = Role(
             name=data.get('name'),
             description=data.get('description')
@@ -61,23 +64,27 @@ class RoleResource(MethodView):
     @require_token
     @require_admin
     def put(self, name, **_):
-        data = request.get_json() or {}
         schema = DaoUpdateRoleSchema()
-        error = schema.validate(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return ResultErrorSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
+
         role = Role.query.filter_by(name=name).first()
         if not role:
             return ResultErrorSchema(
                 message='Role does not exist!',
                 status_code=404
             ).jsonify()
+
         role.description = data.get('description')
         db.session.commit()
+
         return ResultSchema(
             data=role.jsonify()
         ).jsonify()

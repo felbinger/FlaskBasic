@@ -181,10 +181,10 @@
                                     {{ render_select_field(forms['modifyAccount'].role) }}
                                 </div>
                                 <div class="col-md-6">
-                                    {{ render_field(forms['modifyAccount'].created, disabled=True) }}
+                                    {{ render_field(forms['modifyAccount'].created, readonly=True) }}
                                 </div>
                                 <div class="col-md-6">
-                                    {{ render_field(forms['modifyAccount'].last_login, disabled=True) }}
+                                    {{ render_field(forms['modifyAccount'].last_login, readonly=True) }}
                                 </div>
                                 <div class="col-md-6">
                                     {{ render_switch_field(forms['modifyAccount'].enable_2fa) }}
@@ -265,7 +265,7 @@
                     <form method="POST">
                         <!--{{ forms['modifyRole'].csrf_token }}-->
                         <div class="modal-body">
-                            {{ render_field(forms['modifyRole'].name, disabled=True) }}
+                            {{ render_field(forms['modifyRole'].name, readonly=True) }}
                             {{ render_field(forms['modifyRole'].description) }}
                         </div>
                         <div class="modal-footer">

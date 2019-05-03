@@ -33,5 +33,5 @@ def test_logout(app, client):
     # utils = Utils(app, client)
     # resp = client.get('/logout', headers={'Set-Cookie': utils.generate_session()})
     # assert resp.status_code == 302
-    # todo implement check if session is blacklisted (redis)
+    # todo implement check if session is blacklisted (set/redis)
     pass

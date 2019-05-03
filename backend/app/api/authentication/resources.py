@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask import request, current_app
 import jwt
 from datetime import datetime, timedelta
+from marshmallow.exceptions import ValidationError
 
 from app.blacklist import blacklist
 from app.db import db
@@ -22,14 +23,14 @@ class AuthResource(MethodView):
         """
         Login using username, password (and 2fa token)
         """
-        data = request.get_json() or {}
         schema = AuthSchema()
-        # use the schema to validate the submitted data
-        error = schema.validate(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return AuthResultSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
 
@@ -95,13 +96,14 @@ class RefreshResource(MethodView):
         """
         Generate a new access token, using a - not blacklisted - refresh token
         """
-        data = request.get_json() or {}
         schema = TokenRefreshSchema()
-        error = schema.validate(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return AuthResultSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
 

@@ -5,6 +5,7 @@ from itsdangerous import (
     URLSafeTimedSerializer, SignatureExpired,
     BadTimeSignature, BadSignature
 )
+from marshmallow.exceptions import ValidationError
 from string import digits, ascii_letters
 from io import BytesIO
 from base64 import b32encode
@@ -52,13 +53,14 @@ class UserResource(MethodView):
         """
         Create an new user account
         """
-        data = request.get_json() or {}
         schema = DaoCreateUserSchema()
-        data, error = schema.load(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return ResultErrorSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
 
@@ -105,14 +107,16 @@ class UserResource(MethodView):
         """
         if uuid == 'me':
             schema = DaoUpdateUserSchema()
-            data = request.get_json()
-            data, error = schema.load(data)
-            if error or not data or not data.items():
+            data = request.get_json() or {}
+            try:
+                data = schema.load(data)
+            except ValidationError as errors:
                 return ResultErrorSchema(
                     message='Payload is invalid',
-                    errors=error,
+                    errors=errors.messages,
                     status_code=400
                 ).jsonify()
+
             if 'role' in data.keys():
                 return ResultErrorSchema(
                     message='You are not allowed to change your role!',
@@ -188,14 +192,16 @@ class UserResource(MethodView):
 
     def _update_user_as_admin(self, target, **_):
         schema = DaoUpdateUserSchema()
-        data = request.get_json()
-        data, error = schema.load(data)
-        if error or not data or not data.items():
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return ResultErrorSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
+
         for key, val in data.items():
             if key == 'role':
                 role = Role.query.filter_by(name=val).first()
@@ -248,12 +254,13 @@ class ResetResource(MethodView):
         Request password reset
         """
         schema = DaoRequestPasswordResetSchema()
-        data = request.get_json()
-        data, error = schema.load(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return ResultErrorSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
 
@@ -331,14 +338,16 @@ class TwoFAResource(MethodView):
         Activate 2FA with a valid token
         """
         schema = DaoTokenSchema()
-        data = request.get_json()
-        data, error = schema.load(data)
-        if error:
+        data = request.get_json() or {}
+        try:
+            data = schema.load(data)
+        except ValidationError as errors:
             return ResultErrorSchema(
                 message='Payload is invalid',
-                errors=error,
+                errors=errors.messages,
                 status_code=400
             ).jsonify()
+
         if user.totp_secret:
             if user.verify_totp(data['token']):
                 user.totp_enabled = True
