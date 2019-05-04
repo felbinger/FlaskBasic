@@ -123,7 +123,6 @@ def test_admin_update_non_existing_role(app, client):
 
 def test_admin_update_invalid_user(app, client):
     utils = Utils(app, client)
-    public_id = utils.get_public_id()
 
     headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
     resp = client.put(f'/api/users/invalid', headers=headers, json={'displayName': 'new'})
@@ -205,6 +204,53 @@ def test_update_enable_2fa(app, client):
     resp = client.post('/api/users/2fa', headers=headers, json={'token': str(totp_token)})
     assert resp.status_code == 200
     assert json.loads(resp.data.decode()).get('message') == '2fa has been enabled'
+
+
+def test_update_enable_2fa_invalid_data(app, client):
+    utils = Utils(app, client)
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    # first step to enable 2fa, get secret key
+    resp = client.put('/api/users/me', headers=headers, json={'totp_enabled': True})
+    assert resp.status_code == 200
+    assert not json.loads(resp.data.decode()).get('data').get('2fa')
+    assert '2fa_secret' in json.loads(resp.data.decode()).get('data')
+    secret = json.loads(resp.data.decode()).get('data').get('2fa_secret')
+
+    # generate a 2fa token using the secret key, and use it to activate 2fa
+    totp_token = str(onetimepass.get_totp(secret)).zfill(6)
+    resp = client.post('/api/users/2fa', headers=headers, json={'invalid': str(totp_token)})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'Payload is invalid'
+
+
+def test_update_enable_2fa_invalid_token(app, client):
+    utils = Utils(app, client)
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    # first step to enable 2fa, get secret key
+    resp = client.put('/api/users/me', headers=headers, json={'totp_enabled': True})
+    assert resp.status_code == 200
+    assert not json.loads(resp.data.decode()).get('data').get('2fa')
+    assert '2fa_secret' in json.loads(resp.data.decode()).get('data')
+    secret = json.loads(resp.data.decode()).get('data').get('2fa_secret')
+
+    # generate a 2fa token using the secret key, and use it to activate 2fa
+    totp_token = str(onetimepass.get_totp(secret)).zfill(6)
+    resp = client.post('/api/users/2fa', headers=headers, json={'token': '000000'})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'invalid token, 2fa stays disabled'
+
+
+def test_update_enable_2fa_only_stage_2(app, client):
+    utils = Utils(app, client)
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+
+    # generate a 2fa token using the secret key, and use it to activate 2fa
+    resp = client.post('/api/users/2fa', headers=headers, json={'token': '000000'})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == '2fa is not setted up'
 
 
 def test_update_show_qr_after_2fa_has_been_enabled(app, client):
