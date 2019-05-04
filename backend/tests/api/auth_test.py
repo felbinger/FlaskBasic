@@ -117,13 +117,10 @@ def test_logout(app, client):
     assert resp.status_code == 200
     assert json.loads(resp.data.decode()).get('data') == 'Successfully blacklisted token'
 
-    # refresh token should be invalid
-    # access token will be still valid
-
-    # TODO token refresh shouldn't work - but it does
+    # refresh token should now be invalid, access token will be still valid til it's expired
     resp = client.post('/api/auth/refresh', json={'refreshToken': refresh_token})
-    # assert resp.status_code == 401
-    # assert json.loads(resp.data.decode()).get('message') == 'Invalid refresh token'
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode()).get('data') == 'Invalid refresh token'
 
 
 # decorator @require_admin before @require_token

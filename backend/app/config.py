@@ -1,3 +1,4 @@
+from .blacklist import SetBlacklist, RedisBlacklist
 import os
 
 
@@ -12,6 +13,7 @@ class Config(object):
     REFRESH_TOKEN_VALIDITY = 360  # minutes
     QR_SCALE = 5
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    BLACKLIST = SetBlacklist()
 
 
 class ProductionConfig(Config):
@@ -34,6 +36,7 @@ class ProductionConfig(Config):
     MAIL_USE_TLS = enc == 'starttls'
     MAIL_USE_SSL = enc == 'ssl'
 
+    BLACKLIST = RedisBlacklist()
     # redis configuration to blacklist refresh tokens
     redis_host = os.environ.get('REDIS_HOSTNAME')
     redis_port = os.environ.get('REDIS_PORT') or 6379

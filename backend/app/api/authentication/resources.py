@@ -4,7 +4,6 @@ import jwt
 from datetime import datetime, timedelta
 from marshmallow.exceptions import ValidationError
 
-from app.blacklist import blacklist
 from app.db import db
 from app.api.user import User
 from ..schemas import ResultSchema, ResultErrorSchema
@@ -111,7 +110,7 @@ class RefreshResource(MethodView):
             refresh_token = data['refreshToken']
 
             # check if refresh token has been blacklisted
-            if blacklist.check(refresh_token):
+            if current_app.config.get('BLACKLIST').check(refresh_token):
                 return ResultSchema(
                     data='Invalid refresh token',
                     status_code=401
@@ -146,6 +145,7 @@ class RefreshResource(MethodView):
         """
         Add a refresh token to the blacklist
         """
+        blacklist = current_app.config.get('BLACKLIST')
         if not blacklist.check(token):
             blacklist.add(token)
             return ResultSchema(

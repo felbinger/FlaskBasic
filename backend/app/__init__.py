@@ -7,7 +7,7 @@ from .api import (
     AuthResource, RefreshResource, VerificationResource,
     ResetResource, TwoFAResource
 )
-from .blacklist import blacklist, RedisBlacklist
+from .blacklist import RedisBlacklist
 from .db import db
 from .config import ProductionConfig, DevelopmentConfig
 from .views import default, admin, profile, auth
@@ -31,9 +31,9 @@ def create_app(testing_config=None) -> Flask:
     db.init_app(app)
     register_models()
 
-    # initialize blacklist
+    # initialize redis blacklist
     if isinstance(blacklist, RedisBlacklist):
-        blacklist.blacklist.init_app(app)
+        app.config.get('BLACKLIST').blacklist.init_app(app)
 
     with app.app_context():
         # create tables

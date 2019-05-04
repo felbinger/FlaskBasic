@@ -99,7 +99,7 @@ def test_admin_update_without_data(app, client):
 
     headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
     resp = client.put(f'/api/users/{public_id}', headers=headers)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
 
 
 def test_admin_update_invalid_data(app, client):
@@ -153,7 +153,7 @@ def test_update_without_data(app, client):
 
     headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
     resp = client.put('/api/users/me', headers=headers)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
 
 
 def test_update_invalid_data(app, client):
@@ -165,6 +165,29 @@ def test_update_invalid_data(app, client):
 
 
 def test_update_enable_2fa(app, client):
+    utils = Utils(app, client)
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    # first step to enable 2fa, get secret key
+    resp = client.put('/api/users/me', headers=headers, json={'totp_enabled': True})
+    assert resp.status_code == 200
+    assert not json.loads(resp.data.decode()).get('data').get('2fa')
+    assert '2fa_secret' in json.loads(resp.data.decode()).get('data')
+    secret = json.loads(resp.data.decode()).get('data').get('2fa_secret')
+
+    # get the qr code
+    resp = client.get('/api/users/2fa', headers=headers)
+    assert resp.status_code == 200
+    # todo check if svg in resp.data.decode()
+
+    # generate a 2fa token using the secret key, and use it to activate 2fa
+    totp_token = str(onetimepass.get_totp(secret)).zfill(6)
+    resp = client.post('/api/users/2fa', headers=headers, json={'token': str(totp_token)})
+    assert resp.status_code == 200
+    assert json.loads(resp.data.decode()).get('message') == '2fa has been enabled'
+
+
+def test_update_show_qr_after_2fa_has_been_enabled(app, client):
     utils = Utils(app, client)
 
     headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}

@@ -1,4 +1,3 @@
-import os
 from flask_redis import FlaskRedis
 
 
@@ -23,7 +22,3 @@ class SetBlacklist:
 
     def check(self, token):
         return token in self.blacklist
-
-
-# todo what about testing config? - should be also a setblacklist
-blacklist = SetBlacklist() if os.environ.get('FLASK_ENV') == 'development' else RedisBlacklist()
