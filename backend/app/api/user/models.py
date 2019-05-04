@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import current_app
 from uuid import uuid4
 from datetime import datetime
 import onetimepass
@@ -58,4 +59,4 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
-        self._password = generate_password_hash(password, method='sha512')
+        self._password = generate_password_hash(password, method=current_app.config.get('HASH_METHOD'))

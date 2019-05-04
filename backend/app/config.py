@@ -9,6 +9,7 @@ class Config(object):
     SECRET_KEY = 'os!zj92WqrxgdT66KLJe7BqnhgEEaM4i9h1.kN5MBYW-N42eI06SWB2FF878KiEUYF@V'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    HASH_METHOD = 'pbkdf2:sha512:20000'
     ACCESS_TOKEN_VALIDITY = 15  # minutes
     REFRESH_TOKEN_VALIDITY = 360  # minutes
     QR_SCALE = 5
