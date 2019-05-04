@@ -111,6 +111,26 @@ def test_admin_update_invalid_data(app, client):
     assert resp.status_code == 400
 
 
+def test_admin_update_non_existing_role(app, client):
+    utils = Utils(app, client)
+    public_id = utils.get_public_id()
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    resp = client.put(f'/api/users/{public_id}', headers=headers, json={'role': 'invalid'})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'Invalid Role'
+
+
+def test_admin_update_invalid_user(app, client):
+    utils = Utils(app, client)
+    public_id = utils.get_public_id()
+
+    headers = {'Authorization': f'Bearer {utils.generate_admin_access_token()}'}
+    resp = client.put(f'/api/users/invalid', headers=headers, json={'displayName': 'new'})
+    assert resp.status_code == 404
+    assert json.loads(resp.data.decode()).get('message') == 'User does not exist'
+
+
 def test_admin_update_enable_2fa(app, client):
     utils = Utils(app, client)
     public_id = utils.get_public_id()
@@ -209,6 +229,79 @@ def test_update_show_qr_after_2fa_has_been_enabled(app, client):
     resp = client.get('/api/users/2fa', headers=headers)
     assert resp.status_code == 400
     assert json.loads(resp.data.decode()).get('message') == 'Unable to generate QR Code'
+
+
+def test_update_disable_2fa(app, client):
+    utils = Utils(app, client)
+    utils.enable_2fa()
+
+    headers = {'Authorization': f'Bearer {utils.generate_access_token()}'}
+
+    # check if 2fa is enabled
+    # resp = client.get('/api/auth', headers=headers)
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {utils.generate_access_token()}'})
+    assert json.loads(resp.data.decode()).get('data').get('2fa')
+
+    # disable 2fa
+    resp = client.put(
+        f'/api/users/me',
+        headers=headers,
+        json={'totp_enabled': False, 'totp_token': utils.generate_2fa_token()}
+    )
+    assert resp.status_code == 200
+    assert not json.loads(resp.data.decode()).get('data').get('2fa')
+
+
+def test_update_disable_2fa_without_token(app, client):
+    utils = Utils(app, client)
+    utils.enable_2fa()
+
+    headers = {'Authorization': f'Bearer {utils.generate_access_token()}'}
+
+    # check if 2fa is enabled
+    # resp = client.get('/api/auth', headers=headers)
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {utils.generate_access_token()}'})
+    assert json.loads(resp.data.decode()).get('data').get('2fa')
+
+    # disable 2fa
+    resp = client.put(
+        f'/api/users/me',
+        headers=headers,
+        json={'totp_enabled': False}
+    )
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'Unable to deactivate 2fa, token not submitted'
+
+
+def test_update_disable_2fa_invalid_token(app, client):
+    utils = Utils(app, client)
+    utils.enable_2fa()
+
+    headers = {'Authorization': f'Bearer {utils.generate_access_token()}'}
+
+    # check if 2fa is enabled
+    # resp = client.get('/api/auth', headers=headers)
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {utils.generate_access_token()}'})
+    assert json.loads(resp.data.decode()).get('data').get('2fa')
+
+    # disable 2fa
+    resp = client.put(
+        f'/api/users/me',
+        headers=headers,
+        json={'totp_enabled': False, 'totp_token': '000000'}
+    )
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'Unable to deactivate 2fa, token is invalid'
+
+
+def test_update_modify_role(app, client):
+    utils = Utils(app, client)
+
+    data = {'role': 'admin'}
+    headers = {'Authorization': f'Bearer {utils.generate_access_token()}'}
+    resp = client.put('/api/users/me', headers=headers, json=data)
+    assert resp.status_code == 403
+    assert json.loads(resp.data.decode()).get('message') == 'You are not allowed to change your role!'
 
 
 def test_delete(app, client):

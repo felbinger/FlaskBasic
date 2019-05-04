@@ -69,6 +69,14 @@ def test_authentication_with_invalid_2fa_token(app, client):
     assert json.loads(resp.data.decode('utf8')).get('message') == 'Invalid credentials'
 
 
+def test_authentication_without_activation(app, client):
+    utils = Utils(app, client)
+    utils.create_user(username='random', password='password_for_random', verified=False)
+    resp = client.post('/api/auth', json={'username': 'random', 'password': 'password_for_random'})
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode('utf8')).get('message') == 'Account not activated'
+
+
 def test_get_user_info(app, client):
     utils = Utils(app, client)
     resp = client.get('/api/auth', headers={'Authorization': f'Bearer {utils.generate_access_token()}'})
@@ -106,6 +114,44 @@ def test_refresh_token(app, client):
     assert resp.status_code == 200
 
 
+def test_refresh_token_wrong_data(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    resp = client.post('/api/auth/refresh', json={'refreshToken': 'invalid'})
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode()).get('message') == 'Invalid refresh token'
+
+
+def test_refresh_token_invalid_data(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    resp = client.post('/api/auth/refresh', json={'invalid': 'invalid'})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'Payload is invalid'
+
+
+def test_refresh_token_deleted_account(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    utils.delete_user()
+
+    resp = client.post('/api/auth/refresh', json={'refreshToken': refresh_token})
+    assert resp.status_code == 400
+    assert json.loads(resp.data.decode()).get('message') == 'User does not exist!'
+
+
 def test_logout(app, client):
     utils = Utils(app, client)
     access_token, refresh_token = utils.generate_access_token(refresh=True)
@@ -121,6 +167,34 @@ def test_logout(app, client):
     resp = client.post('/api/auth/refresh', json={'refreshToken': refresh_token})
     assert resp.status_code == 401
     assert json.loads(resp.data.decode()).get('data') == 'Invalid refresh token'
+
+
+def test_logout_invalid(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    resp = client.delete('/api/auth/refresh/invalid')
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode()).get('message') == 'Invalid refresh token'
+
+
+def test_logout_blacklisted(app, client):
+    utils = Utils(app, client)
+    access_token, refresh_token = utils.generate_admin_access_token(refresh=True)
+
+    resp = client.get('/api/auth', headers={'Authorization': f'Bearer {access_token}'})
+    assert resp.status_code == 200
+
+    resp = client.delete(f'/api/auth/refresh/{refresh_token}')
+    assert resp.status_code == 200
+    assert json.loads(resp.data.decode()).get('data') == 'Successfully blacklisted token'
+
+    resp = client.delete(f'/api/auth/refresh/{refresh_token}')
+    assert resp.status_code == 401
+    assert json.loads(resp.data.decode()).get('message') == 'Invalid refresh token'
 
 
 # decorator @require_admin before @require_token

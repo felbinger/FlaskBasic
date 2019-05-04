@@ -147,13 +147,21 @@ class RefreshResource(MethodView):
         """
         blacklist = current_app.config.get('BLACKLIST')
         if not blacklist.check(token):
-            blacklist.add(token)
-            return ResultSchema(
-                data='Successfully blacklisted token',
-                status_code=200
-            ).jsonify()
+            try:
+                # check if the token is valid (could be a way to spam the blacklist)
+                jwt.decode(token, current_app.config['SECRET_KEY'], algorithms='HS256')
+                blacklist.add(token)
+                return ResultSchema(
+                    data='Successfully blacklisted token',
+                    status_code=200
+                ).jsonify()
+            except (jwt.exceptions.DecodeError, jwt.ExpiredSignatureError, jwt.exceptions.InvalidSignatureError):
+                return ResultErrorSchema(
+                    message='Invalid refresh token',
+                    status_code=401
+                ).jsonify()
         else:
-            return ResultSchema(
-                data='Invalid refresh token',
+            return ResultErrorSchema(
+                message='Invalid refresh token',
                 status_code=401
             ).jsonify()
