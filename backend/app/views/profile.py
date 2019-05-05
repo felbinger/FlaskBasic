@@ -67,7 +67,7 @@ def account():
                         # @Security: possible security issue
                         session['2fa_secret'] = resp.json().get('data').get('2fa_secret')
                         return redirect(url_for('app.views.profile.enable2fa'))
-                    flash(f'Account has been update!', 'success')
+                    flash(f'Account has been updated!', 'success')
 
             elif action == 'changePassword':
                 password = request.form.get('password')
@@ -87,7 +87,7 @@ def account():
                         else:
                             flash('Password has been updated!', 'success')
                 else:
-                    flash('The entered Password\'s are not the same!', 'danger')
+                    flash('The entered passwords are not the same!', 'danger')
 
     role = requests.get(
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
