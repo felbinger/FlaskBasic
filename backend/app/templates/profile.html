@@ -42,11 +42,13 @@
                                     <form method="POST">
                                     {{ forms['modifyProfile'].csrf_token }}
                                         <div class="row">
-
                                             <div class="col-lg-2">
                                                 <img class="rounded" src="/picture/{{ data['publicId'] }}" alt="Profile Picture"
                                                      width="200" height="200">
-                                                <!-- TODO update profile picture: <input type="file">-->
+                                                <!-- TODO update profile picture-->
+                                                <div class="my-1 text-center">
+                                                    <label class="btn btn-warning">Select Picture<input type="file" name="profilePicture" hidden></label>
+                                                </div>
                                                 <div class="my-2">
                                                     {{ render_switch_field(forms['modifyProfile'].enable_2fa, checked=data['2fa'], onclick='show2FAInput()') }}
                                                     {% if data['2fa'] %}
@@ -65,30 +67,30 @@
                                                     }
                                                 </script>
                                             </div>
-                                            <div class="col-lg-10">
+                                            <div class="col-lg-10 col-xs-6">
                                                 <div class="row">
-                                                    <div class="col-md-6">
+                                                    <div class="col-lg-6">
                                                         {{ render_field(forms['modifyProfile'].display_name, value=data['displayName']) }}
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-lg-6">
                                                         {{ render_field(forms['modifyProfile'].email, value=data['email']) }}
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-lg-6">
                                                         {{ render_field(forms['modifyProfile'].username, value=data['username'], disabled=True) }}
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-lg-6">
                                                         {{ render_field(forms['modifyProfile'].role, value=data['role']['description'], disabled=True) }}
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-lg-6">
                                                         {{ render_field(forms['modifyProfile'].last_login, value=data['lastLogin'], disabled=True) }}
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-lg-6">
                                                         {{ render_field(forms['modifyProfile'].created, value=data['created'], disabled=True) }}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div align="right" class="form-group">
+                                        <div class="form-group float-right">
                                             <button class="btn btn-primary" type="button" data-target="#modalChangePassword" data-toggle="modal">Change Password</button>
                                             <button class="btn btn-primary" name="action" value="modifyProfile" type="submit">Save</button>
                                         </div>

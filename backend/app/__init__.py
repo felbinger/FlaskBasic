@@ -32,7 +32,7 @@ def create_app(testing_config=None) -> Flask:
     register_models()
 
     # initialize redis blacklist
-    if isinstance(blacklist, RedisBlacklist):
+    if isinstance(app.config.get('BLACKLIST'), RedisBlacklist):
         app.config.get('BLACKLIST').blacklist.init_app(app)
 
     with app.app_context():

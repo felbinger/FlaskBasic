@@ -13,73 +13,49 @@ from .utils import require_login, require_logout
 auth = Blueprint(__name__, 'auth')
 
 
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=1, max=80)])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=200)])
-
-
 class PasswordResetForm(FlaskForm):
     email = StringField('E-Mail', validators=[InputRequired()])
     recaptcha = RecaptchaField()
 
 
-class TOTPForm(FlaskForm):
-    token = StringField("2FA Token", validators=[Length(max=6)])
+@auth.route('/login/success', methods=['POST'])
+@require_logout
+def login_success():
+    if 'accessToken' in request.get_json() and 'refreshToken' in request.get_json():
+        access_token = request.get_json().get('accessToken')
+        resp = requests.get(
+            f'{request.scheme}://{request.host}{url_for("auth_api")}',
+            headers={'Authorization': f'Bearer {access_token}'},
+        )
+        if resp.status_code == 200:
+            session['access_token'] = access_token
+            session['refresh_token'] = request.get_json().get('refreshToken')
+            return 'Success', 200
+        else:
+            return 'Access Token is invalid', 401
+    else:
+        return 'Payload is invalid', 400
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 @require_logout
 def login():
-    form = LoginForm()
     if request.method == 'POST':
-        if form.validate_on_submit():
-            resp = requests.post(
+        if 'accessToken' in request.get_json() and 'refreshToken' in request.get_json():
+            access_token = request.get_json().get('accessToken')
+            resp = requests.get(
                 f'{request.scheme}://{request.host}{url_for("auth_api")}',
-                json={
-                    'username': form.username.data,
-                    'password': form.password.data
-                }
-            ).json()
-            if resp.get('message') == 'Missing 2fa token':
-                # @Security: possible credential exposure in unencrypted token
-                # maybe execute some rot or so before to obfuscate credentials?
-                session['username'] = form.username.data
-                session['password'] = form.password.data
-                return redirect(url_for('app.views.auth.get_2fa'))
-            elif resp.get('accessToken'):
-                session['access_token'] = resp.get('accessToken')
-                session['refresh_token'] = resp.get('refreshToken')
-                return redirect(url_for('app.views.default.index'))
+                headers={'Authorization': f'Bearer {access_token}'},
+            )
+            if resp.status_code == 200:
+                session['access_token'] = access_token
+                session['refresh_token'] = request.get_json().get('refreshToken')
+                return 'Success', 200
             else:
-                flash(resp.get('message'), 'danger')
+                return 'Access Token is invalid', 401
         else:
-            flash('Invalid Credentials!', 'danger')
-    return render_template('login.html', form=form)
-
-
-@auth.route('/get2fa', methods=['GET', 'POST'])
-@require_logout
-def get_2fa():
-    form = TOTPForm()
-    if form.validate_on_submit():
-        resp = requests.post(
-            f'{request.scheme}://{request.host}{url_for("auth_api")}',
-            json={
-                'username': session['username'],
-                'password': session['password'],
-                'token': form.token.data
-            }
-        ).json()
-
-        if resp.get('accessToken'):
-            session['access_token'] = resp.get('accessToken')
-            session['refresh_token'] = resp.get('refreshToken')
-            del session['username']
-            del session['password']
-            return redirect(url_for('app.views.default.index'))
-        else:
-            flash(resp.get('message'), 'danger')
-    return render_template('get2FAToken.html', form=form)
+            return 'Payload is invalid', 400
+    return render_template('login.html')
 
 
 @auth.route('/logout')

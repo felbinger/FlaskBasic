@@ -2,7 +2,6 @@
 This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https://blackrockdigital.github.io/startbootstrap-sb-admin/index.html).
 
 ### TODO
-* Think of implementing some api calls (e.g. login) client site (via js) to enhance security -> how to get token to flask session (Issue with view - won't come up in real frontend (full js))
 * Tests: Add missing test cases
   * flask_mail
   * Password reset

@@ -23,23 +23,27 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div align="center">
-                                <div class="alert alert-{{ category }}">
-                                    <span class="fa fa-info-circle"></span> {{ message }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    {% endwith %}
+                    <div id="loginError" class="alert alert-danger" style="display: none;"></div>
                     <form method="POST">
-                        {{ form.csrf_token }}
-                        {{ render_field(form.username) }}
-                        {{ render_field(form.password) }}
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+                        <div class="form-group">
+                            <div class="form-label-group">
+                                <input class="form-control" id="username" name="username" placeholder="Username" required type="text" value="">
+                                <label for="username">Username</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label-group">
+                                <input class="form-control" id="password" name="password" placeholder="Password" required type="password" value="">
+                                <label for="password">Password</label>
+                            </div>
+                        </div>
+                        <div id="2faField" style="display: none;" class="form-group">
+                            <div class="form-label-group">
+                                <input class="form-control" id="token" name="token" placeholder="2FA Token" type="text" value="">
+                                <label for="token">2FA Token</label>
+                            </div>
+                        </div>
+                        <button id="loginBtn" class="btn btn-lg btn-primary btn-block">Login</button>
                         <a href="/reset/request">Forgot your password?</a>
                     </form>
                 </div>
@@ -56,5 +60,65 @@
             crossorigin="anonymous"></script>
         <!-- Bootstrap 4.3.1 JS -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <!-- Axios -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
+                integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
+                crossorigin="anonymous"></script>
+        <script>
+            let setTokens = (access, refresh) => {
+                axios.post('/login/success', {
+                    accessToken: access,
+                    refreshToken: refresh
+                }).then((response) => {
+                    if (response.status === 200) {
+                        window.location = '/';
+                    }
+                }).catch((error) => {
+                    console.log(error)
+                });
+            };
+
+            let login = (username, password, token=null) => {
+                let body = { username: username, password: password };
+                if (token != null) {
+                    body.token = token;
+                }
+                axios.post('/api/auth', body
+                ).then((response) => {
+                    setTokens(response.data.accessToken, response.data.refreshToken);
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                }).catch((error) => {
+                    switch (error.response.data.message) {
+                        case 'Invalid credentials':
+                            let loginError = document.getElementById('loginError');
+                            loginError.style.display = 'block';
+                            loginError.innerHTML = '<span class="fa fa-info-circle"></span> Invalid Credentials';
+                            break;
+                        case 'Missing 2fa token':
+                            document.getElementById('2faField').style.display = 'block';
+                            break;
+                    }
+                });
+            };
+
+            document.getElementById('loginBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                let username = document.getElementById('username').value;
+                let password = document.getElementById('password').value;
+                if (username.length > 0 && password.length > 0) {
+                    if (document.getElementById('2faField').style.display === 'block') {
+                        let token = document.getElementById('token').value;
+                        login(username, password, token);
+                    } else {
+                        login(username, password);
+                    }
+                } else {
+                    let loginError = document.getElementById('loginError');
+                    loginError.style.display = 'block';
+                    loginError.innerHTML = '<span class="fa fa-info-circle"></span> Fill out all fields';
+                }
+            });
+        </script>
     </body>
 </html>
