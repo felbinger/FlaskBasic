@@ -288,7 +288,14 @@ class ResetResource(MethodView):
         """
         Confirm password reset, by clicking the link in the email (html can't do put so it's the link of the view)
         """
+        blacklist = current_app.config.get('BLACKLIST')
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+
+        if blacklist.check(token):
+            return ResultErrorSchema(
+                message='Token is invalid!'
+            ).jsonify()
+
         try:
             email = s.loads(token, salt='reset-password', max_age=7200)
         except (BadSignature, SignatureExpired, BadTimeSignature):
@@ -296,21 +303,23 @@ class ResetResource(MethodView):
                 message='Token is invalid!'
             ).jsonify()
 
+        blacklist.add(token)
+
         user = User.query.filter_by(email=email).first()
-        if user:
-            new_password = random_string()
+        if not user:
+            return ResultErrorSchema(
+                message='User does not exist!'
+            ).jsonify()
 
-            # send the new password using email
-            mail = Mail(current_app)
-            body = f'Hello, your new password is: <code>{new_password}</code>'
-            mail.send_message("Password Reset!", recipients=[user.email], html=body)
+        # generate new password
+        new_password = random_string()
 
-            # update password in database
-            user.password = new_password
-            db.session.commit()
+        # update password in database
+        user.password = new_password
+        db.session.commit()
 
-        return ResultErrorSchema(
-            message='Password has been updated, you will find it in your inbox!',
+        return ResultSchema(
+            data={'password': new_password},
             status_code=200
         ).jsonify()
 

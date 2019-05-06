@@ -3,8 +3,8 @@ from marshmallow import ValidationError
 
 
 def validate_spaces(text):
-    if " " in text:
-        raise ValidationError("Text should'nt contain any space")
+    if ' ' in text:
+        raise ValidationError("Text shouldn't contain any space")
 
 
 class ResultErrorSchema:
