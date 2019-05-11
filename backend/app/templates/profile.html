@@ -20,17 +20,6 @@
         <div id="wrapper">
             <div id="content-wrapper">
                 <div class="container-fluid">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="form-group">
-                                    <div class="alert alert-{{ category }}"><span
-                                            class="fa fa-info-circle"></span> {{ message }}</div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
                     <div class="row">
                         <div class="offset-md-2 col-md-8">
                             <div class="card mb-3 mx-auto">
@@ -39,91 +28,125 @@
                                     Profile
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST">
-                                    {{ forms['modifyProfile'].csrf_token }}
-                                        <div class="row">
-                                            <div class="col-lg-2">
-                                                <img class="rounded" src="/picture/{{ data['publicId'] }}" alt="Profile Picture"
-                                                     width="200" height="200">
-                                                <!-- TODO update profile picture-->
-                                                <div class="my-1 text-center">
-                                                    <label class="btn btn-warning">Select Picture<input type="file" name="profilePicture" hidden></label>
-                                                </div>
-                                                <div class="my-2">
-                                                    {{ render_switch_field(forms['modifyProfile'].enable_2fa, checked=data['2fa'], onclick='show2FAInput()') }}
-                                                    {% if data['2fa'] %}
-                                                        <div class="my-2" style="display: none;" id="disable2fa">
-                                                            {{ render_field(forms['modifyProfile'].totp_token) }}
+                                    <div id="statusMsg" class="alert" style="display: none;"></div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="offset-md-1 col-md-10">
+                                                                <img class="rounded" src="/picture/{{ data['publicId'] }}"
+                                                                 alt="Profile Picture" width="100%" height="100%">
+                                                                <div class="my-2">
+                                                                    <div class="custom-control custom-switch">
+                                                                        <input class="custom-control-input" id="enable2fa" name="enable_2fa" onclick="show2FAInput()" type="checkbox" {{ 'checked' if data['2fa'] else '' }}>
+                                                                        <label class="custom-control-label" for="enable2fa">2FA enabled</label>
+                                                                    </div>
+                                                                    {% if data['2fa'] %}
+                                                                        <div class="my-2" style="display: none;" id="disable2fa">
+                                                                            <div class="form-group">
+                                                                                <div class="form-label-group">
+                                                                                    <input class="form-control" id="disable2faToken" placeholder="Token to deactivate 2fa" type="text">
+                                                                                    <label for="disable2faToken">Token to deactivate 2fa</label>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    {% endif %}
+                                                    </div>
                                                 </div>
-                                                <script>
-                                                    function show2FAInput() {
-                                                        let style = "none";
-                                                        if (!document.getElementById("enable_2fa").checked){
-                                                            style = "block";
-                                                        }
-                                                        document.getElementById("disable2fa").style.display = style;
-                                                    }
-                                                </script>
-                                            </div>
-                                            <div class="col-lg-10 col-xs-6">
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        {{ render_field(forms['modifyProfile'].display_name, value=data['displayName']) }}
-                                                    </div>
-                                                    <div class="col-lg-6">
-                                                        {{ render_field(forms['modifyProfile'].email, value=data['email']) }}
-                                                    </div>
-                                                    <div class="col-lg-6">
-                                                        {{ render_field(forms['modifyProfile'].username, value=data['username'], disabled=True) }}
-                                                    </div>
-                                                    <div class="col-lg-6">
-                                                        {{ render_field(forms['modifyProfile'].role, value=data['role']['description'], disabled=True) }}
-                                                    </div>
-                                                    <div class="col-lg-6">
-                                                        {{ render_field(forms['modifyProfile'].last_login, value=data['lastLogin'], disabled=True) }}
-                                                    </div>
-                                                    <div class="col-lg-6">
-                                                        {{ render_field(forms['modifyProfile'].created, value=data['created'], disabled=True) }}
+                                                <div class="col-md-12 my-2">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <div class="form-group">
+                                                                <div class="form-label-group">
+                                                                    <input class="form-control" id="password" name="password"
+                                                                           placeholder="Password" type="password">
+                                                                    <label for="password">Password</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="form-label-group">
+                                                                    <input class="form-control" id="password2" name="password2"
+                                                                           placeholder="Password (again)" type="password">
+                                                                    <label for="password2">Password (again)</label>
+                                                                </div>
+                                                            </div>
+                                                            <button class="btn btn-primary float-right" id="changePasswordBtn">Change Password</button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-group float-right">
-                                            <button class="btn btn-primary" type="button" data-target="#modalChangePassword" data-toggle="modal">Change Password</button>
-                                            <button class="btn btn-primary" name="action" value="modifyProfile" type="submit">Save</button>
+                                        <div class="col-md-8">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input class="form-control" id="username" placeholder="Username" type="text" value="{{ data['username'] }}" disabled>
+                                                            <label for="username">Username</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input class="form-control" id="displayName" placeholder="Display Name" maxlength="128" type="text" value="{{ data['displayName'] }}">
+                                                            <label for="display_name">Display Name</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input class="form-control" id="email"placeholder="E-Mail Address" type="text" value="{{ data['email'] }}">
+                                                            <label for="email">E-Mail Address</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input class="form-control" id="role" name="role" placeholder="Role" type="text" value="{{ data['role']['description'] }}" disabled>
+                                                            <label for="role">Role</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input class="form-control" id="lastLogin" placeholder="Last Login" type="text" value="{{ data['lastLogin'] }}" disabled>
+                                                            <label for="last_login">Last Login</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="form-label-group">
+                                                            <input class="form-control" id="created" placeholder="Created" type="text" value="{{ data['created'] }}" disabled>
+                                                            <label for="created">Created</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
+                                                            </div>
+                                                            <div class="custom-file">
+                                                                <input type="file" class="custom-file-input" id="profilePicture"
+                                                                aria-describedby="inputGroupFileAddon01">
+                                                                <label class="custom-file-label" for="profilePicture">Choose new profile picture</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button class="btn btn-primary float-right" id="modifyProfileBtn">Save</button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <!-- Modal: Change Password -->
-        <div class="modal fade" id="modalChangePassword">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Change Password</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <form method="POST">
-                        {{ forms['changePassword'].csrf_token }}
-                        <div class="modal-body">
-                            {{ render_field(forms['changePassword'].password) }}
-                            {{ render_field(forms['changePassword'].password2) }}
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                            <button class="btn btn-primary" name="action" value="changePassword"
-                                    type="submit">Change Password</button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
@@ -133,14 +156,52 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"
                 integrity="sha256-H3cjtrm/ztDeuhCN9I4yh4iN2Ybx/y1RM7rMmAesA0k="
                 crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap.js"
-                integrity="sha256-tJIoHA64cNe60LQ0mux9ILw+9cLD+RobM7arU7vNlJk="
-                crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.js"
-                integrity="sha256-BFIKaFl5uYR8kP6wcRxaAqJpfZfC424TBccBBVjVzuY="
-                crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"
                 integrity="sha256-fzFFyH01cBVPYzl16KT40wqjhgPtq6FFUB6ckN2+GGw="
                 crossorigin="anonymous"></script>
+        <!-- Axios -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
+                integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
+                crossorigin="anonymous"></script>
+        <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+        <script>
+            document.getElementById('modifyProfileBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                let displayName = document.getElementById('displayName').value;
+                let email = document.getElementById('email').value;
+                let profilePicture = document.getElementById('profilePicture').value;
+                let totp = document.getElementById('enable2fa').checked;
+                // token to deactivate 2fa
+                let totpToken = '';
+                if (document.getElementById('disable2faToken')) {
+                    totpToken = document.getElementById('disable2faToken').value;
+                }
+                if (email.length <= 0) {
+                    setStatusMessage('E-Mail cannot be empty!', 'danger')
+                } else {
+                    modifyProfile(displayName, email, profilePicture, totp, totpToken);
+                }
+            });
+
+            document.getElementById('changePasswordBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                let password = document.getElementById('password').value;
+                let password2 = document.getElementById('password2').value;
+                if (password.length > 0 && password2.length > 0) {
+                    changePassword(password, password2);
+                    document.getElementById('password').value = '';
+                    document.getElementById('password2').value = '';
+                } else {
+                    setStatusMessage('Fill out all fields!', 'danger')
+                }
+            });
+
+            function show2FAInput() {
+                let totpToken = document.getElementById("disable2fa");
+                if (totpToken) {
+                    totpToken.style.display = (document.getElementById("enable2fa").checked) ? 'none' : 'block';
+                }
+            }
+        </script>
     </body>
 </html>

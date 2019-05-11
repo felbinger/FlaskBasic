@@ -10,7 +10,7 @@ from .api import (
 from .blacklist import RedisBlacklist
 from .db import db
 from .config import ProductionConfig, DevelopmentConfig
-from .views import default, admin, profile, auth
+from .views import default, admin, auth
 
 
 def create_app(testing_config=None) -> Flask:
@@ -53,7 +53,6 @@ def create_app(testing_config=None) -> Flask:
 
     # register views
     app.register_blueprint(default)
-    app.register_blueprint(profile)
     app.register_blueprint(admin)
     app.register_blueprint(auth)
 

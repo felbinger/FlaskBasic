@@ -11,7 +11,8 @@
             integrity="sha256-zuYfqYVhondYLhMhEA58/2PA/prdFq3gT72DxNwSD4M="
             crossorigin="anonymous" />
         <!-- Bootstrap 4.3.1 CSS -->
-        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              rel="stylesheet" id="bootstrap-css">
         <link href="{{url_for('static',filename='css/sb-admin.css')}}" rel="stylesheet">
     </head>
     <body class="bg-dark">
@@ -23,29 +24,19 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div align="center">
-                                <div class="alert alert-{{ category }}">
-                                    <span class="fa fa-info-circle"></span> {{ message }}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    {% endwith %}
-
-                    <div align="center">
-                        {{ data['qr']|safe }}
-                        <code>{{ data['secret'] }}</code>
+                    <div id="statusMsg" class="alert" style="display: none;"></div>
+                    <div style="text-align: center;">
+                        <img id="qr" src="" alt="QR Code"/><br/>
+                        <code id="secret"></code><br/>
                     </div>
 
-                    <form method="POST">
-                        {{ form.csrf_token }}
-                        {{ render_field(form.token) }}
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">Enable 2FA</button>
-                    </form>
+                    <div class="form-group">
+                        <div class="form-label-group">
+                            <input class="form-control" id="token" placeholder="Token" type="text">
+                            <label for="token">Token</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-lg btn-primary btn-block" id="enable2faBtn">Enable 2FA</button>
                 </div>
             </div>
         </div>
@@ -60,5 +51,37 @@
             crossorigin="anonymous"></script>
         <!-- Bootstrap 4.3.1 JS -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <!-- Axios -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
+                integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
+                crossorigin="anonymous"></script>
+        <script src="{{ url_for('static',filename='js/utils.js') }}"></script>
+        <script>
+            document.getElementById('secret').innerText = getCookie('2faSecret');
+            delCookie('2faSecret'); // @Security this does not work
+
+            // get qr code
+            let xhr = new XMLHttpRequest();
+            xhr.responseType = 'blob';
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    document.getElementById('qr').src = URL.createObjectURL(xhr.response);
+                }
+            };
+            xhr.open('GET', '/api/users/2fa', true);
+            xhr.setRequestHeader('Authorization', `Bearer ${getCookie('accessToken')}`);
+            xhr.send();
+
+            document.getElementById('enable2faBtn').addEventListener('click', (e) => {
+               e.preventDefault();
+               let token = document.getElementById('token').value;
+               // check if the token form is valid (6 numeric characters)
+               if (!isNaN(token) && token.length === 6) {
+                   enable2fa(token);
+               } else {
+                   setStatusMessage("Token is invalid!", 'danger');
+               }
+            });
+        </script>
     </body>
 </html>

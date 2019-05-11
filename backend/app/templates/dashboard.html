@@ -31,6 +31,7 @@
                             {% endfor %}
                         {% endif %}
                     {% endwith %}
+                    <div id="statusMsg" class="alert" style="display: none;"></div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card mb-3">
@@ -297,6 +298,11 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"
                 integrity="sha256-fzFFyH01cBVPYzl16KT40wqjhgPtq6FFUB6ckN2+GGw="
                 crossorigin="anonymous"></script>
+        <!-- Axios -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
+                integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
+                crossorigin="anonymous"></script>
+        <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
         <script>
             $(document).ready(function () {
                 $('#accountTable').DataTable({

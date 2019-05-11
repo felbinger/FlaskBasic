@@ -39,18 +39,23 @@ def login():
     return render_template('login.html')
 
 
-@auth.route('/logout')
+@auth.route('/logout', methods=['GET', 'POST'])
 @require_login
 def logout():
-    # add refresh token to blacklist
-    resp = requests.delete(
-        f'{request.scheme}://{request.host}{url_for("refresh_api")}/{session["refresh_token"]}'
-    )
-    if resp.status_code != 200:
-        print("Unable to blacklist refresh token!")
-    session['refresh_token'] = None
-    session['access_token'] = None
-    return redirect(url_for('app.views.auth.login'), code=302)
+    if request.method == 'POST':
+        session['refresh_token'] = None
+        session['access_token'] = None
+        return 'Success', 200
+    else:
+        # add refresh token to blacklist
+        resp = requests.delete(
+            f'{request.scheme}://{request.host}{url_for("refresh_api")}/{session["refresh_token"]}'
+        )
+        if resp.status_code != 200:
+            print("Unable to blacklist refresh token!")
+        session['refresh_token'] = None
+        session['access_token'] = None
+        return redirect(url_for('app.views.auth.login'), code=302)
 
 
 @auth.route('/verify/<string:token>')

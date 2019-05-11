@@ -132,11 +132,10 @@ class UserResource(MethodView):
             for key, val in data.items():
                 if key == 'totp_enabled':
                     if val:
-                        # create secret and set code_viewed to false, to make it possible to generate a qr code
+                        # generate a new secret
                         if not user.totp_enabled:
                             user.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
                             totp_secret = user.totp_secret
-                            user.code_viewed = False
                     else:
                         # deactivate 2fa
                         if user.totp_enabled:
@@ -148,7 +147,6 @@ class UserResource(MethodView):
                             if user.verify_totp(totp_deactivation_token):
                                 user.totp_enabled = False
                                 user.totp_secret = None
-                                user.code_viewed = False
                             else:
                                 return ResultErrorSchema(
                                     message='Unable to deactivate 2fa, token is invalid'
@@ -275,7 +273,11 @@ class ResetResource(MethodView):
             link = f'{request.scheme}://{request.host}{url_for("app.views.auth.confirm_password_reset", token=token)}'
             body = f'Hello, if you want to reset your password, click <a href="{link}">here</a>.\n' + \
                    f'If you haven\'t requested a password reset, just ignore this message.'
-            mail.send_message("Password Reset!", recipients=[data['email']], html=body)
+
+            if user.totp_enabled:
+                body += f'\nIf you have 2fa enabled and don\'t find your token, you have to contact an Administrator!'
+
+            mail.send_message("Password Recovery", recipients=[data['email']], html=body)
 
             print(body)
 
@@ -327,8 +329,7 @@ class ResetResource(MethodView):
 class TwoFAResource(MethodView):
     @require_token
     def get(self, user):
-        if not user.totp_enabled and not user.code_viewed:
-            user.code_viewed = True
+        if user.totp_secret and not user.totp_enabled:
             db.session.commit()
             url = pyqrcode.create(user.get_totp_uri())
             stream = BytesIO()
@@ -367,7 +368,6 @@ class TwoFAResource(MethodView):
                 ).jsonify()
             else:
                 user.totp_secret = None
-                user.code_viewed = False
                 db.session.commit()
                 return ResultErrorSchema(
                     message='invalid token, 2fa stays disabled',

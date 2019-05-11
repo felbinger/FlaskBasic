@@ -25,7 +25,6 @@ class User(db.Model):
 
     totp_enabled = Column('2fa_enabled', Boolean, nullable=False, default=False)
     totp_secret = Column('2fa_secret', String(128), nullable=True, default=None)
-    code_viewed = Column('2fa_qr_viewed', Boolean, nullable=False, default=False)
 
     def __init__(self, *args, **kwargs):
         kwargs['_password'] = generate_password_hash(kwargs['password'], method='sha512')
@@ -51,7 +50,14 @@ class User(db.Model):
         return f'otpauth://totp/FlaskBasic:{self.username}?secret={self.totp_secret}&issuer=FlaskBasic'
 
     def verify_totp(self, token):
-        return onetimepass.valid_totp(token, self.totp_secret)
+        """
+        This method will return true if the totp secret is none,
+        maybe 2fa has been enabled in the database without providing a totp secret by an admin
+        """
+        ret = True
+        if self.totp_secret:
+            ret = onetimepass.valid_totp(token, self.totp_secret)
+        return ret
 
     @property
     def password(self):

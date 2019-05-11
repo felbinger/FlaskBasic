@@ -23,7 +23,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="loginError" class="alert alert-danger" style="display: none;"></div>
+                    <div id="statusMsg" class="alert" style="display: none;"></div>
                     <form method="POST">
                         <div class="form-group">
                             <div class="form-label-group">
@@ -64,44 +64,8 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
                 integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
                 crossorigin="anonymous"></script>
+        <script src="{{ url_for('static',filename='js/utils.js') }}"></script>
         <script>
-            let setTokens = (access, refresh) => {
-                axios.post('/login', {
-                    accessToken: access,
-                    refreshToken: refresh
-                }).then((response) => {
-                    if (response.status === 200) {
-                        window.location = '/';
-                    }
-                }).catch((error) => {
-                    console.log(error)
-                });
-            };
-
-            let login = (username, password, token=null) => {
-                let body = { username: username, password: password };
-                if (token != null) {
-                    body.token = token;
-                }
-                axios.post('/api/auth', body
-                ).then((response) => {
-                    setTokens(response.data.accessToken, response.data.refreshToken);
-                    document.getElementById('username').value = '';
-                    document.getElementById('password').value = '';
-                }).catch((error) => {
-                    switch (error.response.data.message) {
-                        case 'Invalid credentials':
-                            let loginError = document.getElementById('loginError');
-                            loginError.style.display = 'block';
-                            loginError.innerHTML = '<span class="fa fa-info-circle"></span> Invalid Credentials';
-                            break;
-                        case 'Missing 2fa token':
-                            document.getElementById('2faField').style.display = 'block';
-                            break;
-                    }
-                });
-            };
-
             document.getElementById('loginBtn').addEventListener('click', (e) => {
                 e.preventDefault();
                 let username = document.getElementById('username').value;
@@ -114,9 +78,7 @@
                         login(username, password);
                     }
                 } else {
-                    let loginError = document.getElementById('loginError');
-                    loginError.style.display = 'block';
-                    loginError.innerHTML = '<span class="fa fa-info-circle"></span> Fill out all fields';
+                    setStatusMessage('Fill out all fields!', 'danger')
                 }
             });
         </script>
