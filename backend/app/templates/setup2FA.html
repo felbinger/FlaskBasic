@@ -37,6 +37,7 @@
                         </div>
                     </div>
                     <button class="btn btn-lg btn-primary btn-block" id="enable2faBtn">Enable 2FA</button>
+                    <a href="" id="reset2faBtn">Back</a>
                 </div>
             </div>
         </div>
@@ -78,9 +79,16 @@
                // check if the token form is valid (6 numeric characters)
                if (!isNaN(token) && token.length === 6) {
                    enable2fa(token);
+                   document.getElementById('token').value = '';
                } else {
                    setStatusMessage("Token is invalid!", 'danger');
                }
+            });
+
+            document.getElementById('reset2faBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                // delete 2fa secret key - you have to reactivate 2fa in the profile again to generate a new secret
+                abort2faSetup();
             });
         </script>
     </body>

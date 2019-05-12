@@ -49,7 +49,7 @@ def create_app(testing_config=None) -> Flask:
                       get=False, get_all=False, post=False, delete=False)
     register_resource(app, ResetResource, 'password_reset_api', '/api/reset', pk='token', pk_type='string',
                       get=False, get_all=False, delete=False)
-    register_resource(app, TwoFAResource, 'two_factor_api', '/api/users/2fa', get=False, put=False, delete=False)
+    register_resource(app, TwoFAResource, 'two_factor_api', '/api/users/2fa', pk=None, get=False, put=False)
     register_resource(app, UploadResource, 'upload_api', '/api/upload', pk='uuid', pk_type='string',
                       get_all=False, put=False, delete=False)
 
@@ -78,4 +78,5 @@ def register_resource(app, resource, endpoint, url, pk='_id', pk_type='int',
     if put:
         app.add_url_rule(f'{url}/<{pk_type}:{pk}>', view_func=view_func, methods=['PUT'])
     if delete:
-        app.add_url_rule(f'{url}/<{pk_type}:{pk}>', view_func=view_func, methods=['DELETE'])
+        # this solution could be better - think about another way to really have a pk on get/put/delete
+        app.add_url_rule(f'{url}/<{pk_type}:{pk}>' if pk else url, view_func=view_func, methods=['DELETE'])

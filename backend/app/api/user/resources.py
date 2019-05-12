@@ -358,23 +358,36 @@ class TwoFAResource(MethodView):
                 status_code=400
             ).jsonify()
 
-        if user.totp_secret:
-            if user.verify_totp(data['token']):
-                user.totp_enabled = True
-                db.session.commit()
-                return ResultErrorSchema(
-                    message='2fa has been enabled',
-                    status_code=200
-                ).jsonify()
-            else:
-                user.totp_secret = None
-                db.session.commit()
-                return ResultErrorSchema(
-                    message='invalid token, 2fa stays disabled',
-                    status_code=400
-                ).jsonify()
-        else:
+        if not user.totp_secret:
             return ResultErrorSchema(
                 message='2fa is not setted up',
                 status_code=400
             ).jsonify()
+        if user.verify_totp(data['token']):
+            user.totp_enabled = True
+            db.session.commit()
+            return ResultErrorSchema(
+                message='2fa has been enabled',
+                status_code=200
+            ).jsonify()
+        else:
+            return ResultErrorSchema(
+                message='invalid token, try again',
+                status_code=400
+            ).jsonify()
+
+    @require_token
+    def delete(self, user):
+        """
+        reset 2fa secret key if it's not enabled, just prepared for setup
+        """
+        if user.totp_enabled and user.totp_secret:
+            return ResultErrorSchema(
+                message='2fa is not in setup state, this can\'t be aborted!'
+            ).jsonify()
+
+        user.totp_secret = None
+        db.session.commit()
+        return ResultSchema(
+            data='2fa secret has been disabled'
+        ).jsonify()
