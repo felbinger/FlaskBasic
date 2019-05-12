@@ -6,10 +6,9 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
   * flask_mail
   * Password reset
   * Account verification
-  * (tests for the views) - views should be replace with real frontend
-* WTForms: Update dashboard/profile (validation using WTForms) (issue with view - won't come up in real frontend (full js))
+  * Profile Picture upload
+* Update admin dashboard to partly js frontend
 * Features:
-  * Profile Picture Upload
   * Messaging System
 
 ### API Information

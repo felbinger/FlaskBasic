@@ -51,10 +51,6 @@ class Utils:
                                     password='password_for_administrator', refresh=False):
         return self.generate_access_token(username=username, password=password, refresh=refresh)
 
-    # generate an session with admin privileges
-    def generate_admin_session(self, username='administrator', password='password_for_administrator'):
-        return self.generate_session(username, password)
-
     def generate_access_token(self, username='test', password='password_for_test', refresh=False):
         with self.app.app_context():
             user = User.query.filter_by(username=username).first()
@@ -72,15 +68,6 @@ class Utils:
                 access_token = json.loads(resp.data.decode()).get('accessToken')
                 refresh_token = json.loads(resp.data.decode()).get('refreshToken')
                 return (access_token, refresh_token) if refresh else access_token
-
-    def generate_session(self, username='test', password='password_for_test'):
-        with self.app.app_context():
-            resp = self.client.post('/login', data={'username': username, 'password': password})
-            print(resp.data)
-            assert resp.status_code == 302  # expect redirect to another page
-            assert 'session=' in resp.headers['Set-Cookie']
-            session_cookie = resp.headers['Set-Cookie'].rsplit("=")[1].rsplit(";")[0]
-            return str(session_cookie)
 
     def get_public_id(self, username='test'):
         with self.app.app_context():
