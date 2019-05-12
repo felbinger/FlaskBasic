@@ -34,16 +34,6 @@ def profile():
     return render_template('profile.html', data=data, role=data.get('role').get('name'))
 
 
-# todo redesign
-@default.route('/picture/<string:public_id>')
-@require_login
-def profile_picture(public_id):
-    pic = f'img/profile/{public_id}.png'
-    if requests.get(f'{request.scheme}://{request.host}/static/{pic}').status_code != 200:
-        pic = f'img/profile/blank.png'
-    return send_from_directory('static', pic)
-
-
 @default.route('/profile/2fa', methods=['GET'])
 @require_login
 def enable2fa():

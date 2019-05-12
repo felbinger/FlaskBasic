@@ -5,7 +5,7 @@ from flask_cors import CORS
 from .api import (
     UserResource, RoleResource,
     AuthResource, RefreshResource, VerificationResource,
-    ResetResource, TwoFAResource
+    ResetResource, TwoFAResource, UploadResource
 )
 from .blacklist import RedisBlacklist
 from .db import db
@@ -50,6 +50,8 @@ def create_app(testing_config=None) -> Flask:
     register_resource(app, ResetResource, 'password_reset_api', '/api/reset', pk='token', pk_type='string',
                       get=False, get_all=False, delete=False)
     register_resource(app, TwoFAResource, 'two_factor_api', '/api/users/2fa', get=False, put=False, delete=False)
+    register_resource(app, UploadResource, 'upload_api', '/api/upload', pk='uuid', pk_type='string',
+                      get_all=False, put=False, delete=False)
 
     # register views
     app.register_blueprint(default)

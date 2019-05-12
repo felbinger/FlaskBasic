@@ -36,7 +36,7 @@
                                                     <div class="card">
                                                         <div class="card-body">
                                                             <div class="offset-md-1 col-md-10">
-                                                                <img class="rounded" src="/picture/{{ data['publicId'] }}"
+                                                                <img id="profilePictureImg" class="rounded" src=""
                                                                  alt="Profile Picture" width="100%" height="100%">
                                                                 <div class="my-2">
                                                                     <div class="custom-control custom-switch">
@@ -129,16 +129,18 @@
                                                     <div class="form-group">
                                                         <div class="input-group">
                                                             <div class="input-group-prepend">
-                                                                <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
+                                                                <span class="input-group-text" id="profilePictureLbl">Upload</span>
                                                             </div>
                                                             <div class="custom-file">
-                                                                <input type="file" class="custom-file-input" id="profilePicture"
-                                                                aria-describedby="inputGroupFileAddon01">
+                                                                <input type="file" class="custom-file-input" id="profilePicture" aria-describedby="profilePictureLbl">
                                                                 <label class="custom-file-label" for="profilePicture">Choose new profile picture</label>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <button class="btn btn-primary float-right" id="modifyProfileBtn">Save</button>
+
+                                                    <div class="form-group">
+                                                        <button class="btn btn-primary float-right" id="modifyProfileBtn">Save</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -169,7 +171,7 @@
                 e.preventDefault();
                 let displayName = document.getElementById('displayName').value;
                 let email = document.getElementById('email').value;
-                let profilePicture = document.getElementById('profilePicture').value;
+                let profilePicture = document.getElementById('profilePicture').files[0];
                 let totp = document.getElementById('enable2fa').checked;
                 // token to deactivate 2fa
                 let totpToken = '';
@@ -194,6 +196,14 @@
                 } else {
                     setStatusMessage('Fill out all fields!', 'danger')
                 }
+            });
+
+            axios.get('/api/upload/me', {
+                headers: {
+                    "Authorization": `Bearer ${getCookie("accessToken")}`
+                }
+            }).then(response => {
+                document.getElementById('profilePictureImg').src = response.data.data;
             });
 
             function show2FAInput() {

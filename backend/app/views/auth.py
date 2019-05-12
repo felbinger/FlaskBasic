@@ -39,23 +39,12 @@ def login():
     return render_template('login.html')
 
 
-@auth.route('/logout', methods=['GET', 'POST'])
+@auth.route('/logout', methods=['POST'])
 @require_login
 def logout():
-    if request.method == 'POST':
-        session['refresh_token'] = None
-        session['access_token'] = None
-        return 'Success', 200
-    else:
-        # add refresh token to blacklist
-        resp = requests.delete(
-            f'{request.scheme}://{request.host}{url_for("refresh_api")}/{session["refresh_token"]}'
-        )
-        if resp.status_code != 200:
-            print("Unable to blacklist refresh token!")
-        session['refresh_token'] = None
-        session['access_token'] = None
-        return redirect(url_for('app.views.auth.login'), code=302)
+    session['refresh_token'] = None
+    session['access_token'] = None
+    return 'Success', 200
 
 
 @auth.route('/verify/<string:token>')
@@ -89,4 +78,8 @@ def confirm_password_reset(token):
     )
     if resp.status_code != 200:
         return f'Error: {resp.json().get("message")}'
-    return f"Your new password is <code>{resp.json().get('data').get('password')}</code>", 200
+    return f"Your new password is <code>{resp.json().get('data').get('password')}</code>", {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    }
