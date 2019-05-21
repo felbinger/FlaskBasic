@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask import request, current_app, url_for
+from flask import request, current_app, url_for, render_template
 from flask_mail import Mail
 from itsdangerous import (
     URLSafeTimedSerializer, SignatureExpired,
@@ -90,9 +90,9 @@ class UserResource(MethodView):
 
         # send email with verification token to enable account
         mail = Mail(current_app)
-        verification_link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
-        body = f'Hello, your account has been created. Your password is: <code>{data["password"]}</code>' \
-            f'Please click <a href="{verification_link}">here</a> to activate your account.'
+        link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
+        body = render_template('mail_verify_account.html', link=link, password=data['password'])
+
         mail.send_message("Activate your account!", recipients=[data['email']], html=body)
 
         return ResultSchema(
@@ -271,15 +271,9 @@ class ResetResource(MethodView):
             # send email
             mail = Mail(current_app)
             link = f'{request.scheme}://{request.host}{url_for("app.views.auth.confirm_password_reset", token=token)}'
-            body = f'Hello, if you want to reset your password, click <a href="{link}">here</a>.\n' + \
-                   f'If you haven\'t requested a password reset, just ignore this message.'
-
-            if user.totp_enabled:
-                body += f'\nIf you have 2fa enabled and don\'t find your token, you have to contact an Administrator!'
+            body = render_template('mail_password_reset.html', link=link, totp=user.totp_enabled)
 
             mail.send_message("Password Recovery", recipients=[data['email']], html=body)
-
-            print(body)
 
         return ResultErrorSchema(
             message='Request has been send. Check your inbox!',
