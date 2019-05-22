@@ -49,7 +49,7 @@ class ProductionConfig(Config):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:root@localhost:9999/flaskbasic?charset=utf8mb4'
+    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:root@localhost:3306/flaskbasic?charset=utf8mb4'
     DEBUG = True
     MAIL_DEBUG = True
 
