@@ -239,7 +239,11 @@ def test_update_enable_2fa_invalid_token(app, client):
     totp_token = str(onetimepass.get_totp(secret)).zfill(6)
     resp = client.post('/api/users/2fa', headers=headers, json={'token': '000000'})
     assert resp.status_code == 400
-    assert json.loads(resp.data.decode()).get('message') == 'invalid token, 2fa stays disabled'
+    assert json.loads(resp.data.decode()).get('message') == 'invalid token, try again'
+
+    resp = client.post('/api/users/2fa', headers=headers, json={'token': str(totp_token)})
+    assert resp.status_code == 200
+    assert json.loads(resp.data.decode()).get('message') == '2fa has been enabled'
 
 
 def test_update_enable_2fa_only_stage_2(app, client):
