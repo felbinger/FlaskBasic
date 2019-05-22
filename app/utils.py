@@ -1,7 +1,13 @@
 from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
+from flask_gnupg import GnuPG
+from hkp4py import KeyServer
 
 db = SQLAlchemy()
+
+keyserver = KeyServer("hkps://pgp.ext.selfnet.de")
+
+gpg = GnuPG()
 
 
 class RedisBlacklist:

@@ -7,8 +7,7 @@ from app.api import (
     RefreshResource, VerificationResource, ResetResource,
     TwoFAResource, UploadResource
 )
-from app.utils import RedisBlacklist
-from app.utils import db
+from app.utils import db, gpg, RedisBlacklist
 from app.config import ProductionConfig, DevelopmentConfig
 from app.views import default, admin, auth
 
@@ -30,6 +29,9 @@ def create_app(testing_config=None) -> Flask:
     # initialize database
     db.init_app(app)
     register_models()
+
+    # initialize gpg
+    gpg.init_app(app)
 
     # initialize redis blacklist
     if isinstance(app.config.get('BLACKLIST'), RedisBlacklist):

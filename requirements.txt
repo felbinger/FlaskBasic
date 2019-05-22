@@ -27,3 +27,5 @@ urllib3==1.24.2
 Werkzeug==0.15.2
 WTForms==2.2.1
 flask_redis==0.3.0
+hkp4py==0.2.3.0
+flask_gnupg==1.0.0
