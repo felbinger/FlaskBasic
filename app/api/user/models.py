@@ -14,7 +14,7 @@ class User(db.Model):
     public_id = Column('publicId', String(36), unique=True, nullable=False)
     username = Column('username', String(64), unique=True, nullable=False)
     displayName = Column('displayName', String(128), unique=True, nullable=True)
-    email = Column('email', String(64), unique=True, nullable=False)
+    email = Column('email', String(64), nullable=False)
     verified = Column('verified', Boolean, nullable=False, default=False)
     _password = Column('password', String(512), nullable=False)
     created = Column('created', DateTime, nullable=False, default=datetime.utcnow())
