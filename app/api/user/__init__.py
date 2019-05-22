@@ -1,2 +1,2 @@
 from .models import User
-from .resources import UserResource, VerificationResource, ResetResource, TwoFAResource
+from .resources import UserResource, VerificationResource, ResetResource

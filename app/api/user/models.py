@@ -26,6 +26,9 @@ class User(db.Model):
     totp_enabled = Column('2fa_enabled', Boolean, nullable=False, default=False)
     totp_secret = Column('2fa_secret', String(128), nullable=True, default=None)
 
+    gpg_enabled = Column('gpg_enabled', Boolean, nullable=False, default=False)
+    gpg_fingerprint = Column('gpg_fingerprint', String(128), nullable=True, default=None)
+
     def __init__(self, *args, **kwargs):
         kwargs['_password'] = generate_password_hash(kwargs['password'], method='sha512')
         super().__init__(*args, **kwargs, public_id=str(uuid4()))
