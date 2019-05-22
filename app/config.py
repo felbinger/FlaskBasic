@@ -1,4 +1,4 @@
-from .blacklist import SetBlacklist, RedisBlacklist
+from .utils import SetBlacklist, RedisBlacklist
 import os
 
 

@@ -4,7 +4,7 @@ import jwt
 from datetime import datetime, timedelta
 from marshmallow.exceptions import ValidationError
 
-from app.db import db
+from app.utils import db
 from app.api.user import User
 from ..schemas import ResultSchema, ResultErrorSchema
 from .utils import require_token

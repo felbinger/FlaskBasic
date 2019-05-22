@@ -5,7 +5,7 @@ from uuid import uuid4
 from datetime import datetime
 import onetimepass
 
-from app.db import db
+from app.utils import db
 
 
 class User(db.Model):

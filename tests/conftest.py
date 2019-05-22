@@ -4,7 +4,7 @@ import json
 import werkzeug.wrappers
 
 from app.config import TestingConfig
-from app.db import db as database
+from app.utils import db as database
 from app import create_app
 
 

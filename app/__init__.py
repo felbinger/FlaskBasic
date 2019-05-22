@@ -2,15 +2,15 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
-from .api import (
-    UserResource, RoleResource,
-    AuthResource, RefreshResource, VerificationResource,
-    ResetResource, TwoFAResource, UploadResource
+from app.api import (
+    AuthResource, UserResource, RoleResource,
+    RefreshResource, VerificationResource, ResetResource,
+    TwoFAResource, UploadResource
 )
-from .blacklist import RedisBlacklist
-from .db import db
-from .config import ProductionConfig, DevelopmentConfig
-from .views import default, admin, auth
+from app.utils import RedisBlacklist
+from app.utils import db
+from app.config import ProductionConfig, DevelopmentConfig
+from app.views import default, admin, auth
 
 
 def create_app(testing_config=None) -> Flask:

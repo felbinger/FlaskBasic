@@ -13,7 +13,7 @@ import os
 import random
 import pyqrcode
 
-from app.db import db
+from app.utils import db
 from ..schemas import ResultSchema, ResultErrorSchema
 from ..authentication import require_token, require_admin
 from ..role import Role
