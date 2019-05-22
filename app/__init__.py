@@ -5,7 +5,7 @@ from flask_cors import CORS
 from app.api import (
     AuthResource, UserResource, RoleResource,
     RefreshResource, VerificationResource, ResetResource,
-    TwoFAResource, UploadResource
+    TOTPResource, UploadResource, GPGResource
 )
 from app.utils import db, gpg, RedisBlacklist
 from app.config import ProductionConfig, DevelopmentConfig
@@ -51,9 +51,11 @@ def create_app(testing_config=None) -> Flask:
                       get=False, get_all=False, post=False, delete=False)
     register_resource(app, ResetResource, 'password_reset_api', '/api/reset', pk='token', pk_type='string',
                       get=False, get_all=False, delete=False)
-    register_resource(app, TwoFAResource, 'two_factor_api', '/api/users/2fa', pk=None, get=False, put=False)
+    register_resource(app, TOTPResource, 'two_factor_api', '/api/users/2fa', pk=None, get=False, put=False)
     register_resource(app, UploadResource, 'upload_api', '/api/upload', pk='uuid', pk_type='string',
                       get_all=False, put=False, delete=False)
+    register_resource(app, GPGResource, 'gpg_api', '/api/users/gpg', pk='token', pk_type='string',
+                      get=False, delete=False)
 
     # register views
     app.register_blueprint(default)
