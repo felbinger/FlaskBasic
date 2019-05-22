@@ -12,7 +12,7 @@ EXPOSE 80
 
 COPY . /app
 WORKDIR /app
-RUN apk add gcc musl-dev libffi-dev libressl-dev
+RUN apk add gcc musl-dev libffi-dev libressl-dev gnupg
 RUN pip install -r requirements.txt
 
 CMD ["gunicorn", "--workers", "4", "wsgi:application", "--bind", "0.0.0.0:80", "--log-syslog", "--log-level", "DEBUG"]

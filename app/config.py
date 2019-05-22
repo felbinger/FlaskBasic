@@ -15,6 +15,7 @@ class Config(object):
     QR_SCALE = 5
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     BLACKLIST = SetBlacklist()
+    GPG_HOME_DIR = '/tmp/gnupg'
 
 
 class ProductionConfig(Config):
