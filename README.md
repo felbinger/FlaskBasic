@@ -10,6 +10,8 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 * Update admin dashboard to partly js frontend
 * Features:
   * Messaging System
+  * GPG (flask_gnupg) Encrypted Mails
+  * GPG (flask_gnupg) 2FA/3FA
 
 ### API Information
 * The base endpoint is: [http://localhost:5000/](http://localhost:5000/)
