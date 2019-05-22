@@ -66,13 +66,3 @@ class User(db.Model):
     @password.setter
     def password(self, password):
         self._password = generate_password_hash(password, method=current_app.config.get('HASH_METHOD'))
-
-    """
-    @property
-    def totp_secret(self):
-        raise AttributeError('totp_secret is not a readable attribute')
-
-    @totp_secret.setter
-    def totp_secret(self, secret):
-        self._totp_secret = secret
-    """
