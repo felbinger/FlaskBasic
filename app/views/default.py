@@ -42,3 +42,19 @@ def enable2fa():
         'Pragma': 'no-cache',
         'Expires': '0'
     }
+
+
+@default.route('/profile/gpg', methods=['GET'])
+@require_login
+def enable_gpg():
+    return render_template('setupGPG.html')
+
+
+@default.route('/enableGPG/<string:token>')
+def enable_mail_encryption(token):
+    resp = requests.put(
+        f'{request.scheme}://{request.host}{url_for("gpg_api")}/{token}'
+    )
+    if resp.status_code != 200:
+        return f'Error: {resp.json().get("message")}'
+    return f"Success"

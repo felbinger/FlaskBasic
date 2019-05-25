@@ -1,0 +1,84 @@
+{% from "_render_field.html" import render_field %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Setup 2FA</title>
+        <!-- Font Awesome 5.0.8 CSS -->
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css"
+            integrity="sha256-zuYfqYVhondYLhMhEA58/2PA/prdFq3gT72DxNwSD4M="
+            crossorigin="anonymous" />
+        <!-- Bootstrap 4.3.1 CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              rel="stylesheet" id="bootstrap-css">
+        <link href="{{url_for('static',filename='css/sb-admin.css')}}" rel="stylesheet">
+    </head>
+    <body class="bg-dark">
+        <div class="container">
+            <div class="card card-login mx-auto mt-5">
+                <div class="card-header">
+                    <div class="text-center">
+                        Setup GPG
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="statusMsg" class="alert" style="display: none;"></div>
+
+                    <div class="form-group">
+                        <div class="form-group">
+                            <div class="role-wrapper select-wrapper">
+                                <span class="role-label">GPG Fingerprint</span>
+                                <select id="fingerprints" class="form-control d-inline-block role-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-lg btn-primary btn-block" id="selectFingerprint">Save selected Fingerprint</button>
+                    <a href="/profile">Back</a>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"
+            integrity="sha256-H3cjtrm/ztDeuhCN9I4yh4iN2Ybx/y1RM7rMmAesA0k="
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"
+            integrity="sha256-fzFFyH01cBVPYzl16KT40wqjhgPtq6FFUB6ckN2+GGw="
+            crossorigin="anonymous"></script>
+        <!-- Bootstrap 4.3.1 JS -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <!-- Axios -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
+                integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
+                crossorigin="anonymous"></script>
+        <script src="{{ url_for('static',filename='js/utils.js') }}"></script>
+        <script>
+            // get fingerprints
+            let sel = document.getElementById('fingerprints');
+            axios.get('/api/users/gpg', config()).then((response) => {
+                if (response.status === 200) {
+                    response.data['data'].forEach((fingerprint) => {
+                        // create new option with fingerprint as value / text
+                        let option = document.createElement("option");
+                        option.text = fingerprint;
+                        // add the option to the select
+                        sel.add(option);
+                    });
+                } else {
+                    console.log(response.data)
+                }
+            }).catch((error) => {
+                console.log(error.response.data)
+            });
+
+            // onclick event listener
+            document.getElementById('selectFingerprint').addEventListener('click', (e) => {
+               e.preventDefault();
+               enable_encrypted_mails(document.getElementById('fingerprints').value);
+            });
+        </script>
+    </body>
+</html>

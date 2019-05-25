@@ -137,7 +137,7 @@
                                                            data-onstyle="success"
                                                            data-offstyle="warning"
                                                            data-width="70"
-                                                           data-toggle="toggle" {{ 'checked' if data['2fa'] else '' }}>
+                                                           data-toggle="toggle" {{ 'checked' if data['2fa'] else '' }}><br>
 
                                                     {% if data['2fa'] %}
                                                         <div class="my-2" style="display: none;" id="disable2fa">
@@ -149,6 +149,15 @@
                                                             </div>
                                                         </div>
                                                     {% endif %}
+
+                                                    GPG:
+                                                    <input id="gpg"
+                                                           data-size="sm"
+                                                           type="checkbox"
+                                                           data-onstyle="success"
+                                                           data-offstyle="warning"
+                                                           data-width="70"
+                                                           data-toggle="toggle" {{ 'checked' if data['gpg'] else '' }}><br>
 
                                                     <div class="form-group">
                                                         <button class="btn btn-primary float-right" id="modifyProfileBtn">Save</button>
@@ -188,13 +197,14 @@
                 let totp = document.getElementById('enable2fa').checked;
                 // token to deactivate 2fa
                 let totpToken = '';
+                let gpg = document.getElementById('gpg').checked;
                 if (document.getElementById('disable2faToken')) {
                     totpToken = document.getElementById('disable2faToken').value;
                 }
                 if (email.length <= 0) {
                     setStatusMessage('E-Mail cannot be empty!', 'danger')
                 } else {
-                    modifyProfile(displayName, email, profilePicture, totp, totpToken);
+                    modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken);
                 }
             });
 
