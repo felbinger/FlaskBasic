@@ -42,7 +42,12 @@ function setStatusMessage(text, category='success') {
 }
 
 let config = () => {
-    return config();
+    return {
+        headers: {
+            'Authorization': `Bearer ${getCookie('accessToken')}`,
+            'Content-Type': 'application/json'
+        }
+    };
 };
 
 function login(username, password, token=null) {
@@ -134,7 +139,7 @@ function uploadProfilePicture(file) {
     });
 }
 
-function modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken=null) {
+function modifyProfile(displayName, email, profilePicture, totp, totpToken=null) {
     refreshToken(() => {
         if (profilePicture !== undefined) {
             uploadProfilePicture(profilePicture);
@@ -170,9 +175,6 @@ function modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken=
                     console.log(error)
                 }
             });
-            if (gpg) {
-                console.log("Setup gpg")
-            }
         }
     });
 }
@@ -273,23 +275,7 @@ function refreshToken(callback) {
                 console.log(error.response.data.message)
             }
         } else {
-            console.log(error)
+            console.log(error);
         }
     });
-}
-
-function enable_encrypted_mails(fingerprint) {
-    axios.post('/api/users/gpg', {
-        fingerprint: fingerprint
-    }, config())
-        .then((response) => {
-            if (response.status === 201) {
-                window.location = '/profile';
-                setStatusMessage('Future mails will be encrypted!');
-            } else {
-                setStatusMessage('The submitted fingerprint is invalid!', 'danger');
-            }
-        }).catch((error) => {
-            console.log(error.response.data)
-        });
 }
