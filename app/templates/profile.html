@@ -5,14 +5,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Profile</title>
+        <!-- Font Awesome 5.8.0 -->
         <link rel="stylesheet"
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css"
               integrity="sha256-zuYfqYVhondYLhMhEA58/2PA/prdFq3gT72DxNwSD4M="
               crossorigin="anonymous"/>
+        <!-- Bootstrap 4 DataTables -->
         <link rel="stylesheet"
               href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.css"
               integrity="sha256-WwAfhb7lVhl1iOpheVulhivZXFmNL6PlUjOCzRBWEl8="
               crossorigin="anonymous"/>
+        <!-- Bootstrap-Toggle -->
+        <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
         <link href="{{ url_for('static',filename='css/sb-admin.css') }}" rel="stylesheet">
     </head>
     <body>
@@ -21,7 +25,7 @@
             <div id="content-wrapper">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="offset-md-2 col-md-8">
+                        <div class="offset-lg-1 col-lg-10">
                             <div class="card mb-3 mx-auto">
                                 <div class="card-header">
                                     <i class="fas fa-user"></i>
@@ -36,24 +40,11 @@
                                                     <div class="card">
                                                         <div class="card-body">
                                                             <div class="offset-md-1 col-md-10">
-                                                                <img id="profilePictureImg" class="rounded" src=""
-                                                                 alt="Profile Picture" width="100%" height="100%">
-                                                                <div class="my-2">
-                                                                    <div class="custom-control custom-switch">
-                                                                        <input class="custom-control-input" id="enable2fa" name="enable_2fa" onclick="show2FAInput()" type="checkbox" {{ 'checked' if data['2fa'] else '' }}>
-                                                                        <label class="custom-control-label" for="enable2fa">2FA enabled</label>
-                                                                    </div>
-                                                                    {% if data['2fa'] %}
-                                                                        <div class="my-2" style="display: none;" id="disable2fa">
-                                                                            <div class="form-group">
-                                                                                <div class="form-label-group">
-                                                                                    <input class="form-control" id="disable2faToken" placeholder="Token to deactivate 2fa" type="text">
-                                                                                    <label for="disable2faToken">Token to deactivate 2fa</label>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    {% endif %}
-                                                                </div>
+                                                                <img id="profilePictureImg"
+                                                                     class="rounded"
+                                                                     alt="Profile Picture"
+                                                                     width="100%"
+                                                                     height="100%">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -138,6 +129,36 @@
                                                         </div>
                                                     </div>
 
+                                                    2FA:
+                                                    <input id="enable2fa"
+                                                           data-size="sm"
+                                                           onclick="show2FAInput()"
+                                                           type="checkbox"
+                                                           data-onstyle="success"
+                                                           data-offstyle="warning"
+                                                           data-width="70"
+                                                           data-toggle="toggle" {{ 'checked' if data['2fa'] else '' }}>
+
+                                                    GPG:
+                                                    <input id="gpg"
+                                                           data-size="sm"
+                                                           type="checkbox"
+                                                           data-onstyle="success"
+                                                           data-offstyle="warning"
+                                                           data-width="70"
+                                                           data-toggle="toggle" {{ 'checked' if data['gpg'] else '' }}>
+
+                                                    {% if data['2fa'] %}
+                                                        <div class="my-2" style="display: none;" id="disable2fa">
+                                                            <div class="form-group">
+                                                                <div class="form-label-group">
+                                                                    <input class="form-control" id="disable2faToken" placeholder="Token to deactivate 2fa" type="text">
+                                                                    <label for="disable2faToken">Token to deactivate 2fa</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+
                                                     <div class="form-group">
                                                         <button class="btn btn-primary float-right" id="modifyProfileBtn">Save</button>
                                                     </div>
@@ -161,6 +182,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"
                 integrity="sha256-fzFFyH01cBVPYzl16KT40wqjhgPtq6FFUB6ckN2+GGw="
                 crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
         <!-- Axios -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"
                 integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM="
@@ -175,13 +197,14 @@
                 let totp = document.getElementById('enable2fa').checked;
                 // token to deactivate 2fa
                 let totpToken = '';
+                let gpg = document.getElementById('gpg').checked;
                 if (document.getElementById('disable2faToken')) {
                     totpToken = document.getElementById('disable2faToken').value;
                 }
                 if (email.length <= 0) {
                     setStatusMessage('E-Mail cannot be empty!', 'danger')
                 } else {
-                    modifyProfile(displayName, email, profilePicture, totp, totpToken);
+                    modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken);
                 }
             });
 

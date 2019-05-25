@@ -54,6 +54,7 @@ class GPGResource(MethodView):
             ).jsonify()
 
         user.gpg_fingerprint = data['fingerprint']
+
         db.session.commit()
 
         # generate token to enable encrypted mails
@@ -65,7 +66,17 @@ class GPGResource(MethodView):
         link = f'{request.scheme}://{request.host}{url_for("app.views.default.enable_mail_encryption", token=token)}'
         body = render_template('mail_encrypt_mails.html', link=link)
 
+        # get and import pgp key
+        if not user.gpg_fingerprint:
+            return ResultErrorSchema(
+                message='Unable to find pgp fingerprint!'
+            ).jsonify()
+
+        print(gpg.import_keys(keyserver.search(f'0x{user.gpg_fingerprint}')[0].key).results)
+
         # todo encrypt mail using gpg
+        body = gpg.encrypt(body, [user.email])
+
         mail.send_message("Enable encrypted mails!", recipients=[user.email], html=body)
 
         return ResultSchema(

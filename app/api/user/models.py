@@ -43,7 +43,8 @@ class User(db.Model):
             'created': self.created.isoformat(),
             'lastLogin': self.last_login.isoformat()if self.last_login else None,
             'role': self.role.jsonify(),
-            '2fa': self.totp_enabled
+            '2fa': self.totp_enabled,
+            'gpg': self.gpg_enabled
         }
 
     def verify_password(self, password):

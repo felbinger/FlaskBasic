@@ -271,6 +271,11 @@ class ResetResource(MethodView):
             link = f'{request.scheme}://{request.host}{url_for("app.views.auth.confirm_password_reset", token=token)}'
             body = render_template('mail_password_reset.html', link=link, totp=user.totp_enabled)
 
+            # check if the email should be encrypted
+            if user.gpg_enabled and user.gpg_fingerprint:
+                pass
+                # todo encrypt email
+
             mail.send_message("Password Recovery", recipients=[data['email']], html=body)
 
         return ResultErrorSchema(

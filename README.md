@@ -4,10 +4,10 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 ### Features
 * User Management
 * Profile Page
+* Account verification
 * 2-Factor Authentication (using totp)
 * Password Reset (using email)
-* GPG encrypted mails
-* Account verification
+* (GPG encrypted mails)
 
 ### TODO
 * Tests: Add missing test cases

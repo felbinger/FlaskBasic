@@ -54,8 +54,8 @@ def create_app(testing_config=None) -> Flask:
     register_resource(app, TOTPResource, 'two_factor_api', '/api/users/2fa', pk=None, get=False, put=False)
     register_resource(app, UploadResource, 'upload_api', '/api/upload', pk='uuid', pk_type='string',
                       get_all=False, put=False, delete=False)
-    register_resource(app, GPGResource, 'gpg_api', '/api/users/gpg', pk='token', pk_type='string',
-                      get=False, delete=False)
+    # register_resource(app, GPGResource, 'gpg_api', '/api/users/gpg', pk='token', pk_type='string',
+    #                  get=False, delete=False)
 
     # register views
     app.register_blueprint(default)

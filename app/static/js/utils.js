@@ -41,6 +41,10 @@ function setStatusMessage(text, category='success') {
     field.innerHTML = `${infoIcon} ${text}`;
 }
 
+let config = () => {
+    return config();
+};
+
 function login(username, password, token=null) {
     let data = { username: username, password: password };
     if (token !== null) {
@@ -108,12 +112,7 @@ function uploadProfilePicture(file) {
         reader.onload = () => {
             axios.post('/api/upload', {
                 file: reader.result
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${getCookie('accessToken')}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
+            }, config()).then((response) => {
                 if (response.status === 201) {
                     setStatusMessage('Profile Picture has been updated!');
                     // todo clear cache (remove image) to load new image
@@ -135,7 +134,7 @@ function uploadProfilePicture(file) {
     });
 }
 
-function modifyProfile(displayName, email, profilePicture, totp, totpToken=null) {
+function modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken=null) {
     refreshToken(() => {
         if (profilePicture !== undefined) {
             uploadProfilePicture(profilePicture);
@@ -149,12 +148,7 @@ function modifyProfile(displayName, email, profilePicture, totp, totpToken=null)
                 email: email,
                 totp_enabled: totp,
                 totp_token: totpToken
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${getCookie('accessToken')}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
+            }, config()).then((response) => {
                 if (response.status === 200) {
                     setStatusMessage('Profile has been saved!');
                     // if 2fa has been disabled, hide input field for the token
@@ -176,6 +170,9 @@ function modifyProfile(displayName, email, profilePicture, totp, totpToken=null)
                     console.log(error)
                 }
             });
+            if (gpg) {
+                console.log("Setup gpg")
+            }
         }
     });
 }
@@ -192,12 +189,7 @@ function changePassword(password, password2) {
             } else {
                 axios.put('/api/users/me', {
                     password: password
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${getCookie('accessToken')}`,
-                        'Content-Type': 'application/json'
-                    }
-                }).then((response) => {
+                }, config()).then((response) => {
                     if (response.status === 200) {
                         setStatusMessage('Password has been updated!');
                     } else {
@@ -222,12 +214,7 @@ function enable2fa(token) {
         } else {
             axios.post('/api/users/2fa', {
                 token: token
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${getCookie('accessToken')}`,
-                    'Content-Type': 'application/json'
-                }
-            }).then((response) => {
+            }, config()).then((response) => {
                 if (response.status === 200) {
                     window.location = '/profile';
                     setStatusMessage('2FA has been enabled!');
@@ -289,4 +276,20 @@ function refreshToken(callback) {
             console.log(error)
         }
     });
+}
+
+function enable_encrypted_mails(fingerprint) {
+    axios.post('/api/users/gpg', {
+        fingerprint: fingerprint
+    }, config())
+        .then((response) => {
+            if (response.status === 201) {
+                window.location = '/profile';
+                setStatusMessage('Future mails will be encrypted!');
+            } else {
+                setStatusMessage('The submitted fingerprint is invalid!', 'danger');
+            }
+        }).catch((error) => {
+            console.log(error.response.data)
+        });
 }
