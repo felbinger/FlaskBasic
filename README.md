@@ -20,7 +20,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
   * Messaging System
   * GPG (flask_gnupg) Encrypted Mails
   * GPG (flask_gnupg) MFA
-
+* Improve profile page design (Image Upload: https://codepen.io/jeikuinu/pen/GBvgge)
 
 #### Environment Variables
 | Key                   | Description                                | Default              |
