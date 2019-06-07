@@ -67,16 +67,12 @@ class GPGResource(MethodView):
 
         fingerprints = list()
 
-        ok = False
-        if user.gpg_fingerprint:
-            keys = keyserver.search(f'0x{user.gpg_fingerprint}', exact=True)
-            if keys and not keys[0].expired:
-                # gpg_fingerprint from db is ok
-                gpg.import_keys(keys[0].key)
-                fingerprints.append(user.gpg_fingerprint)
-                ok = True
-
-        if not ok:
+        keys = keyserver.search(f'0x{fingerprint}', exact=True) if fingerprint else None
+        if keys and not keys[0].expired:
+            # gpg_fingerprint from db is ok
+            gpg.import_keys(keys[0].key)
+            fingerprints.append(fingerprint)
+        else:
             # querying to get keys by email address
             keys = list(filter(lambda k: not k.revoked, keyserver.search(email)))
             for key in keys:
