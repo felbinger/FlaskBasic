@@ -15,7 +15,11 @@ class Config(object):
     QR_SCALE = 5
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     BLACKLIST = SetBlacklist()
-    GPG_HOME_DIR = '/tmp/gnupg'
+    DATA_DIR = '/tmp/data'
+    PGP_HOME = f'{DATA_DIR}/gnupg'
+    PGP_NAME = 'FlaskBasic'
+    PGP_EMAIL = 'flaskbasic@localhost'
+    PGP_PASSPHRASE = 'ABcd1234'
 
 
 class ProductionConfig(Config):
@@ -37,6 +41,9 @@ class ProductionConfig(Config):
     enc = os.environ.get('MAIL_ENCRYPTION') or 'unencrypted'
     MAIL_USE_TLS = enc == 'starttls'
     MAIL_USE_SSL = enc == 'ssl'
+
+    DATA_DIR = '/data'
+    PGP_HOME = f'{DATA_DIR}/gnupg'
 
     BLACKLIST = RedisBlacklist()
     # redis configuration to blacklist refresh tokens

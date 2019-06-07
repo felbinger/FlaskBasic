@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_cors import CORS
+from gnupg import GPG
 
 from app.api import (
     AuthResource, UserResource, RoleResource,
@@ -32,6 +33,35 @@ def create_app(testing_config=None) -> Flask:
 
     # initialize gpg
     gpg.init_app(app)
+
+    # import keys from keyfile.asc if it exists
+    if os.path.exists(f"{app.config['DATA_DIR']}/keyfile.asc"):
+
+        # todo should old keys be deleted?
+
+        with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'r') as f:
+            gpg.import_keys(f.read())
+
+    # generate a new key if there is no keyfile.asc if it's necessary because there are no private keys
+    elif len(gpg.list_keys(secret=True)) == 0:
+        data = {
+            'key_type': 'RSA',
+            'key_length': 4096,
+            'name_real': app.config.get('PGP_NAME'),
+            'name_email': app.config.get('PGP_EMAIL'),
+            'passphrase': app.config.get('PGP_PASSPHRASE')
+        }
+        key_input = gpg.gen_key_input(**data)
+        key = gpg.gen_key(key_input)
+        assert 'KEY_CREATED' in key.stderr
+
+        # export the new generated key pair to keyfile.asc
+        with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'w') as f:
+            f.write(gpg.export_keys(key.fingerprint))
+            f.write(gpg.export_keys(key.fingerprint, secret=True, passphrase=app.config.get('PGP_PASSPHRASE')))
+
+    # assert that there is at least one secret key to start the application
+    assert len(gpg.list_keys(secret=True)) >= 1
 
     # initialize redis blacklist
     if isinstance(app.config.get('BLACKLIST'), RedisBlacklist):

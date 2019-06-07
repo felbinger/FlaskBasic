@@ -6,7 +6,6 @@ from itsdangerous import (
     URLSafeTimedSerializer, SignatureExpired,
     BadTimeSignature, BadSignature
 )
-from datetime import datetime
 
 from app.utils import keyserver, gpg, db
 from ..schemas import ResultSchema, ResultErrorSchema
@@ -22,7 +21,7 @@ class GPGResource(MethodView):
         keys = keyserver.search(user.email)
         # remove expired keys
         if keys:
-            keys = list(filter(lambda key: key.expiration_date < datetime.now(), keys))
+            keys = list(filter(lambda key: not key.expired, keys))
         if not keys:
             return ResultErrorSchema(
                 message='Unable to find PGP keys for this email address!',
@@ -66,16 +65,31 @@ class GPGResource(MethodView):
         link = f'{request.scheme}://{request.host}{url_for("app.views.default.enable_mail_encryption", token=token)}'
         body = render_template('mail_encrypt_mails.html', link=link)
 
-        # get and import pgp key
-        if not user.gpg_fingerprint:
-            return ResultErrorSchema(
-                message='Unable to find pgp fingerprint!'
-            ).jsonify()
+        fingerprints = list()
 
-        print(gpg.import_keys(keyserver.search(f'0x{user.gpg_fingerprint}')[0].key).results)
+        ok = False
+        if user.gpg_fingerprint:
+            keys = keyserver.search(f'0x{user.gpg_fingerprint}', exact=True)
+            if keys and not keys[0].expired:
+                # gpg_fingerprint from db is ok
+                gpg.import_keys(keys[0].key)
+                fingerprints.append(user.gpg_fingerprint)
+                ok = True
 
-        # todo encrypt mail using gpg
-        body = gpg.encrypt(body, [user.email])
+        if not ok:
+            # querying to get keys by email address
+            keys = list(filter(lambda k: not k.revoked, keyserver.search(email)))
+            for key in keys:
+                fingerprints.append(key.keyid)
+                gpg.import_keys(key.key)
+
+        body = gpg.encrypt(
+            data=body,
+            recipients=fingerprints,
+            always_trust=True,
+            sign=True,
+            passphrase=current_app.config.get('PGP_PASSPHRASE')
+        ).data.decode().replace("\n", "</br>")
 
         mail.send_message("Enable encrypted mails!", recipients=[user.email], html=body)
 
