@@ -1,3 +1,5 @@
+from flask import current_app
+from flask_mail import Mail
 from flask_redis import FlaskRedis
 from flask_sqlalchemy import SQLAlchemy
 from flask_gnupg import GnuPG
@@ -31,3 +33,33 @@ class SetBlacklist:
 
     def check(self, token):
         return token in self.blacklist
+
+
+def send_mail(subject, recipient, content):
+    mail = Mail(current_app)
+
+    # check if the email should be encrypted
+    if recipient.gpg_enabled:
+        fingerprints = list()
+
+        keys = keyserver.search(f'0x{recipient.gpg_fingerprint}', exact=True) if recipient.gpg_fingerprint else None
+        if keys and not keys[0].expired:
+            # gpg_fingerprint from db is ok
+            gpg.import_keys(keys[0].key)
+            fingerprints.append(recipient.gpg_fingerprint)
+        else:
+            # querying to get keys by email address
+            keys = list(filter(lambda k: not k.revoked, keyserver.search(recipient.email)))
+            for key in keys:
+                fingerprints.append(key.keyid)
+                gpg.import_keys(key.key)
+
+        content = gpg.encrypt(
+            data=content,
+            recipients=fingerprints,
+            always_trust=True,
+            sign=True,
+            passphrase=current_app.config.get('PGP_PASSPHRASE')
+        ).data.decode().replace("\n", "</br>")
+
+    mail.send_message(subject=subject, recipients=[recipient.email], html=content)

@@ -1,13 +1,12 @@
 from flask.views import MethodView
 from flask import request, url_for, current_app, render_template
 from marshmallow.exceptions import ValidationError
-from flask_mail import Mail
 from itsdangerous import (
     URLSafeTimedSerializer, SignatureExpired,
     BadTimeSignature, BadSignature
 )
 
-from app.utils import keyserver, gpg, db
+from app.utils import keyserver, send_mail, db
 from ..schemas import ResultSchema, ResultErrorSchema
 from ..authentication import require_token
 from ..user import User
@@ -61,33 +60,10 @@ class GPGResource(MethodView):
         token = s.dumps(user.email, salt='activate-encrypted-mails')
 
         # send email with verification token to enable account
-        mail = Mail(current_app)
         link = f'{request.scheme}://{request.host}{url_for("app.views.default.enable_mail_encryption", token=token)}'
         body = render_template('mail_encrypt_mails.html', link=link)
 
-        fingerprints = list()
-
-        keys = keyserver.search(f'0x{fingerprint}', exact=True) if fingerprint else None
-        if keys and not keys[0].expired:
-            # gpg_fingerprint from db is ok
-            gpg.import_keys(keys[0].key)
-            fingerprints.append(fingerprint)
-        else:
-            # querying to get keys by email address
-            keys = list(filter(lambda k: not k.revoked, keyserver.search(email)))
-            for key in keys:
-                fingerprints.append(key.keyid)
-                gpg.import_keys(key.key)
-
-        body = gpg.encrypt(
-            data=body,
-            recipients=fingerprints,
-            always_trust=True,
-            sign=True,
-            passphrase=current_app.config.get('PGP_PASSPHRASE')
-        ).data.decode().replace("\n", "</br>")
-
-        mail.send_message("Enable encrypted mails!", recipients=[user.email], html=body)
+        send_mail(subject="Enable encrypted mails!", recipient=user, content=body)
 
         return ResultSchema(
             data='a confirmation email has been send, please decrypt it and click on the link to confirm ',
@@ -122,7 +98,7 @@ class GPGResource(MethodView):
                 message='User does not exist!'
             ).jsonify()
 
-        user._gpg_enabled = True
+        user.gpg_enabled = True
         db.session.commit()
 
         return ResultSchema(

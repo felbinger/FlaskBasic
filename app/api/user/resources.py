@@ -1,6 +1,5 @@
 from flask.views import MethodView
 from flask import request, current_app, url_for, render_template
-from flask_mail import Mail
 from itsdangerous import (
     URLSafeTimedSerializer, SignatureExpired,
     BadTimeSignature, BadSignature
@@ -11,7 +10,7 @@ from base64 import b32encode
 import os
 import random
 
-from app.utils import db
+from app.utils import db, send_mail
 from ..schemas import ResultSchema, ResultErrorSchema
 from ..authentication import require_token, require_admin
 from ..role import Role
@@ -87,11 +86,10 @@ class UserResource(MethodView):
         token = s.dumps(data['email'], salt='verify-email')
 
         # send email with verification token to enable account
-        mail = Mail(current_app)
         link = f'{request.scheme}://{request.host}{url_for("app.views.auth.verify", token=token)}'
         body = render_template('mail_verify_account.html', link=link, password=data['password'])
 
-        mail.send_message("Activate your account!", recipients=[data['email']], html=body)
+        send_mail(subject='Activate your account!', recipient=user, content=body)
 
         return ResultSchema(
             data=user.jsonify(),
@@ -267,16 +265,10 @@ class ResetResource(MethodView):
         user = User.query.filter_by(email=data['email']).first()
         if user:
             # send email
-            mail = Mail(current_app)
             link = f'{request.scheme}://{request.host}{url_for("app.views.auth.confirm_password_reset", token=token)}'
             body = render_template('mail_password_reset.html', link=link, totp=user.totp_enabled)
 
-            # check if the email should be encrypted
-            if user.gpg_enabled and user.gpg_fingerprint:
-                pass
-                # todo encrypt email
-
-            mail.send_message("Password Recovery", recipients=[data['email']], html=body)
+            send_mail(subject="Password Recovery!", recipient=user, content=body)
 
         return ResultErrorSchema(
             message='Request has been send. Check your inbox!',
