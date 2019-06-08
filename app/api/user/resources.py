@@ -147,6 +147,9 @@ class UserResource(MethodView):
                                 return ResultErrorSchema(
                                     message='Unable to deactivate 2fa, token is invalid'
                                 ).jsonify()
+                elif key == 'gpg_enabled':
+                    if user.gpg_enabled and not val:
+                        user.gpg_enabled = False
                 else:
                     setattr(user, key, val)
 

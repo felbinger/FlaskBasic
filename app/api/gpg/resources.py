@@ -63,7 +63,7 @@ class GPGResource(MethodView):
         link = f'{request.scheme}://{request.host}{url_for("app.views.default.enable_mail_encryption", token=token)}'
         body = render_template('mail_encrypt_mails.html', link=link)
 
-        send_mail(subject="Enable encrypted mails!", recipient=user, content=body)
+        send_mail(subject="Enable encrypted mails!", recipient=user, content=body, force_gpg=True)
 
         return ResultSchema(
             data='a confirmation email has been send, please decrypt it and click on the link to confirm ',

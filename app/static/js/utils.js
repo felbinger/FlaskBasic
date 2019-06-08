@@ -152,7 +152,8 @@ function modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken=
                 displayName: displayName,
                 email: email,
                 totp_enabled: totp,
-                totp_token: totpToken
+                totp_token: totpToken,
+                gpg_enabled: gpg
             }, config()).then((response) => {
                 if (response.status === 200) {
                     setStatusMessage('Profile has been saved!');
@@ -176,7 +177,7 @@ function modifyProfile(displayName, email, profilePicture, totp, gpg, totpToken=
                 }
             });
             if (gpg) {
-                console.log("Setup gpg")
+                window.location = '/profile/gpg';
             }
         }
     });

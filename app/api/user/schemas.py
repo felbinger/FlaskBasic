@@ -31,6 +31,7 @@ class DaoUpdateUserSchema(Schema):
     totp_enabled = fields.Boolean()
     # token to deactivate 2fa
     totp_token = fields.Str(allow_none=True)
+    gpg_enabled = fields.Boolean()
 
 
 class DaoRequestPasswordResetSchema(Schema):

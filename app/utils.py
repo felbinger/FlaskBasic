@@ -35,11 +35,11 @@ class SetBlacklist:
         return token in self.blacklist
 
 
-def send_mail(subject, recipient, content):
+def send_mail(subject, recipient, content, force_gpg=False):
     mail = Mail(current_app)
 
     # check if the email should be encrypted
-    if recipient.gpg_enabled:
+    if recipient.gpg_enabled or force_gpg:
         fingerprints = list()
 
         keys = keyserver.search(f'0x{recipient.gpg_fingerprint}', exact=True) if recipient.gpg_fingerprint else None
