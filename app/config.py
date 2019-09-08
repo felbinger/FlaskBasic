@@ -5,7 +5,7 @@ import os
 class Config(object):
     DEBUG = False
     MAIL_DEBUG = False
-    MAIL_DEFAULT_SENDER = 'flaskbasic@localhost'
+    MAIL_DEFAULT_SENDER = ('Flask Basic', 'flaskbasic@localhost')
     SECRET_KEY = 'os!zj92WqrxgdT66KLJe7BqnhgEEaM4i9h1.kN5MBYW-N42eI06SWB2FF878KiEUYF@V'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
