@@ -15,6 +15,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
   * Password reset
   * Account verification
   * Profile Picture upload
+* GPG encrypted emails arrive incompleted
 * Update admin dashboard to partly js frontend
 * Features:
   * Messaging System

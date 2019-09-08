@@ -54,6 +54,7 @@ def send_mail(subject, recipient, content, force_gpg=False):
                 fingerprints.append(key.keyid)
                 gpg.import_keys(key.key)
 
+        # encrypt the content of the email and replace new lines with html new line to beautify mail
         content = gpg.encrypt(
             data=content,
             recipients=fingerprints,
