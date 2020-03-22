@@ -54,3 +54,8 @@
 6. Change database collection from `latin1_swedish_ci` to `utf8mb4_unicode_ci`
 
 ### Development Environment
+
+```bash
+$ python3 -m pip install requirements.txt
+$ FLASK_ENV=development FLASK_DEBUG=1 flask run
+```
