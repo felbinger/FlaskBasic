@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask import request, current_app
 import jwt
 from datetime import datetime, timedelta
+from typing import Union
 from marshmallow.exceptions import ValidationError
 
 from app.utils import db
@@ -13,12 +14,12 @@ from .schemas import AuthSchema, AuthResultSchema, TokenRefreshSchema
 
 class AuthResource(MethodView):
     @require_token
-    def get(self, user, **_):
+    def get(self, user: User, **_) -> ResultSchema:
         return ResultSchema(
             data=user.jsonify()
         ).jsonify()
 
-    def post(self):
+    def post(self) -> Union[AuthResultSchema, ResultSchema]:
         """
         Login using username, password (and 2fa token)
         """
@@ -91,7 +92,7 @@ class AuthResource(MethodView):
 
 
 class RefreshResource(MethodView):
-    def post(self):
+    def post(self) -> Union[AuthResultSchema, ResultSchema]:
         """
         Generate a new access token, using a - not blacklisted - refresh token
         """
@@ -141,7 +142,7 @@ class RefreshResource(MethodView):
                 status_code=401
             ).jsonify()
 
-    def delete(self, token):
+    def delete(self, token: str) -> Union[ResultSchema, ResultErrorSchema]:
         """
         Add a refresh token to the blacklist
         """

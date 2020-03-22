@@ -34,6 +34,7 @@ class ModifyAccountForm(FlaskForm):
     created = StringField('Created', id='modifyAccountCreated')
     last_login = StringField('Last Login', id='modifyAccountLastLogin')
     enable_2fa = BooleanField('2FA enabled', id='modifyAccount2FAEnabled')
+    enable_gpg = BooleanField('GPG enabled', id='modifyAccountGPGEnabled')
 
 
 class ChangePasswordForm(FlaskForm):
@@ -101,6 +102,7 @@ def dashboard():
                         f'{request.scheme}://{request.host}{url_for("user_api")}/{public_id}',
                         json={
                             'totp_enabled': False if not request.form.get('enable_2fa') else True,
+                            'gpg_enabled': False if not request.form.get('enable_gpg') else True,
                             'username': request.form.get('username'),
                             'displayName': request.form.get('display_name'),
                             'email': request.form.get('email'),
@@ -209,7 +211,7 @@ def dashboard():
 
     role = requests.get(
         f'{request.scheme}://{request.host}{url_for("auth_api")}',
-        headers={'Authorization': f'Bearer {session.get("access_token")}'},
+        headers=header,
     ).json().get('data').get('role').get('name')
 
     data = dict()

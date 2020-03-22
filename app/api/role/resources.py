@@ -1,5 +1,6 @@
 from flask.views import MethodView
 from flask import request
+from typing import Union
 from marshmallow.exceptions import ValidationError
 
 from app.utils import db
@@ -12,7 +13,7 @@ from .schemas import DaoCreateRoleSchema, DaoUpdateRoleSchema
 
 class RoleResource(MethodView):
     @require_token
-    def get(self, name, **_):
+    def get(self, name: str, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         if name is None:
             # get all roles
             return ResultSchema(
@@ -32,7 +33,7 @@ class RoleResource(MethodView):
 
     @require_token
     @require_admin
-    def post(self, **_):
+    def post(self, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         schema = DaoCreateRoleSchema()
         data = request.get_json() or {}
         try:
@@ -63,7 +64,7 @@ class RoleResource(MethodView):
 
     @require_token
     @require_admin
-    def put(self, name, **_):
+    def put(self, name: str, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         schema = DaoUpdateRoleSchema()
         data = request.get_json() or {}
         try:
@@ -91,7 +92,7 @@ class RoleResource(MethodView):
 
     @require_token
     @require_admin
-    def delete(self, name, **_):
+    def delete(self, name: str, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         if name == 'admin':
             return ResultErrorSchema(
                 message='Admin role cannot be deleted!',

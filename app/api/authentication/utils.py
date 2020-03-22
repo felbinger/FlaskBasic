@@ -1,12 +1,12 @@
 from flask import request, current_app
 import jwt
-
+from typing import Union
 from ..user import User
 from ..schemas import ResultErrorSchema
 
 
-def require_token(view_func):
-    def wrapper(*args, **kwargs):
+def require_token(view_func: callable) -> callable:
+    def wrapper(*args: list, **kwargs: dict) -> Union[ResultErrorSchema, callable]:
         access_token = request.headers.get('Authorization')
         if not access_token or not access_token.startswith("Bearer "):
             return ResultErrorSchema(
@@ -26,8 +26,8 @@ def require_token(view_func):
     return wrapper
 
 
-def require_admin(view_func):
-    def wrapper(*args, **kwargs):
+def require_admin(view_func: callable) -> callable:
+    def wrapper(*args: list, **kwargs: dict) -> Union[ResultErrorSchema, callable]:
         user = kwargs.get('user')
         if not user:
             raise AttributeError('Missing user attribute, please use @require_token before!')

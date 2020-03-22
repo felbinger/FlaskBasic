@@ -10,9 +10,13 @@ ENV REDIS_DATABASE=0
 
 EXPOSE 80
 
-COPY . /app
 WORKDIR /app
-RUN apk add gcc musl-dev libffi-dev libressl-dev gnupg
-RUN pip install -r requirements.txt
+COPY requirements.txt /app/
 
-CMD ["gunicorn", "--workers", "4", "wsgi:application", "--bind", "0.0.0.0:80", "--log-syslog", "--log-level", "DEBUG"]
+RUN apk add gcc musl-dev libffi-dev libressl-dev gnupg
+RUN pip install -r /app/requirements.txt
+
+COPY . /app
+
+
+CMD ["gunicorn", "--config", "wsgi_config.py", "wsgi:application"]

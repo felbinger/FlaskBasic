@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 from flask import Flask
 from flask_cors import CORS
-from gnupg import GPG
 
 from app.api import (
     AuthResource, UserResource, RoleResource,
@@ -32,36 +32,37 @@ def create_app(testing_config=None) -> Flask:
     register_models()
 
     # initialize gpg
+    #Path(app.config['GPG_HOME_DIR']).mkdir(parents=True, exist_ok=True)
+    #Path(app.config['GPG_SECRET_KEYRING']).mkdir(parents=True, exist_ok=True)
     gpg.init_app(app)
 
-    # import keys from keyfile.asc if it exists
-    if os.path.exists(f"{app.config['DATA_DIR']}/keyfile.asc"):
+    """
+    # check if there keyring contains at least one secret key
+    if not len(gpg.list_keys(secret=True)):
+        # import keys from keyfile.asc
+        if os.path.isfile(f"{app.config['DATA_DIR']}/keyfile.asc"):
+            with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'r') as f:
+                gpg.import_keys(f.read())
+        else:
+            # generate new key
+            data = {
+                'key_type': 'RSA',
+                'key_length': 4096,
+                'name_real': app.config.get('GPG_NAME'),
+                'name_email': app.config.get('GPG_EMAIL'),
+                'passphrase': app.config.get('GPG_PASSPHRASE')
+            }
+            key = gpg.gen_key(gpg.gen_key_input(**data))
 
-        # todo should old keys be deleted?
+            # export the new generated key pair to keyfile.asc
+            with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'w') as f:
+                f.write(gpg.export_keys(key.fingerprint))
+                f.write(gpg.export_keys(key.fingerprint, secret=True, passphrase=app.config.get('GPG_PASSPHRASE')))
 
-        with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'r') as f:
-            gpg.import_keys(f.read())
-
-    # generate a new key if there is no keyfile.asc if it's necessary because there are no private keys
-    elif len(gpg.list_keys(secret=True)) == 0:
-        data = {
-            'key_type': 'RSA',
-            'key_length': 4096,
-            'name_real': app.config.get('PGP_NAME'),
-            'name_email': app.config.get('PGP_EMAIL'),
-            'passphrase': app.config.get('PGP_PASSPHRASE')
-        }
-        key_input = gpg.gen_key_input(**data)
-        key = gpg.gen_key(key_input)
-        assert 'KEY_CREATED' in key.stderr
-
-        # export the new generated key pair to keyfile.asc
-        with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'w') as f:
-            f.write(gpg.export_keys(key.fingerprint))
-            f.write(gpg.export_keys(key.fingerprint, secret=True, passphrase=app.config.get('PGP_PASSPHRASE')))
-
-    # assert that there is at least one secret key to start the application
-    assert len(gpg.list_keys(secret=True)) >= 1
+        # check again it the keyring contains at least one secret key
+        if not len(gpg.list_keys(secret=True)):
+            print("WARNING: pgp functionality is limited")
+    """
 
     # initialize redis blacklist
     if isinstance(app.config.get('BLACKLIST'), RedisBlacklist):

@@ -10,31 +10,31 @@ from app.utils import db
 
 class User(db.Model):
     __table_args__ = ({'mysql_character_set': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_520_ci'})
-    id = Column('id', Integer, primary_key=True)
-    public_id = Column('publicId', String(36), unique=True, nullable=False)
-    username = Column('username', String(64), unique=True, nullable=False)
-    displayName = Column('displayName', String(128), unique=True, nullable=True)
-    email = Column('email', String(64), nullable=False)
-    verified = Column('verified', Boolean, nullable=False, default=False)
-    _password = Column('password', String(512), nullable=False)
-    created = Column('created', DateTime, nullable=False, default=datetime.utcnow())
-    last_login = Column('lastLogin', DateTime)
+    id: int = Column('id', Integer, primary_key=True)
+    public_id: str = Column('publicId', String(36), unique=True, nullable=False)
+    username: str = Column('username', String(64), unique=True, nullable=False)
+    displayName: str = Column('displayName', String(128), unique=True, nullable=True)
+    email: str = Column('email', String(64), nullable=False)
+    verified: bool = Column('verified', Boolean, nullable=False, default=False)
+    _password: str = Column('password', String(512), nullable=False)
+    created: datetime = Column('created', DateTime, nullable=False, default=datetime.utcnow())
+    last_login: datetime = Column('lastLogin', DateTime)
 
-    role_id = Column('role', Integer, ForeignKey('role.id'), nullable=False)
+    role_id: int = Column('role', Integer, ForeignKey('role.id'), nullable=False)
     role = db.relationship('Role', backref=db.backref('users', lazy=True))
 
-    totp_enabled = Column('2fa_enabled', Boolean, nullable=False, default=False)
-    totp_secret = Column('2fa_secret', String(128), nullable=True, default=None)
+    totp_enabled: bool = Column('2fa_enabled', Boolean, nullable=False, default=False)
+    totp_secret: str = Column('2fa_secret', String(128), nullable=True, default=None)
 
-    gpg_enabled = Column('gpg_enabled', Boolean, nullable=False, default=False)
-    gpg_fingerprint = Column('gpg_fingerprint', String(128), nullable=True, default=None)
-    gpg_public_key = Column('gpg_public_key', LargeBinary, nullable=True)
+    gpg_enabled: bool = Column('gpg_enabled', Boolean, nullable=False, default=False)
+    gpg_fingerprint: str = Column('gpg_fingerprint', String(128), nullable=True, default=None)
+    gpg_public_key: str = Column('gpg_public_key', LargeBinary, nullable=True)
 
-    def __init__(self, *args, **kwargs):
-        kwargs['_password'] = generate_password_hash(kwargs['password'], method='sha512')
+    def __init__(self, *args: list, **kwargs: dict) -> "User":
+        kwargs['_password']: str = generate_password_hash(kwargs['password'], method='sha512')
         super().__init__(*args, **kwargs, public_id=str(uuid4()))
 
-    def jsonify(self):
+    def jsonify(self) -> dict:
         return {
             'publicId': self.public_id,
             'username': self.username,
@@ -48,13 +48,13 @@ class User(db.Model):
             'gpg': self.gpg_enabled
         }
 
-    def verify_password(self, password):
+    def verify_password(self, password: str) -> bool:
         return check_password_hash(self._password, password)
 
-    def get_totp_uri(self):
+    def get_totp_uri(self) -> str:
         return f'otpauth://totp/FlaskBasic:{self.username}?secret={self.totp_secret}&issuer=FlaskBasic'
 
-    def verify_totp(self, token):
+    def verify_totp(self, token: str) -> bool:
         """
         This method will return true if the totp secret is none,
         maybe 2fa has been enabled in the database without providing a totp secret by an admin
@@ -69,5 +69,5 @@ class User(db.Model):
         raise AttributeError('password is not a readable attribute')
 
     @password.setter
-    def password(self, password):
+    def password(self, password: str):
         self._password = generate_password_hash(password, method=current_app.config.get('HASH_METHOD'))

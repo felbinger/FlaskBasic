@@ -16,10 +16,11 @@ class Config(object):
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
     BLACKLIST = SetBlacklist()
     DATA_DIR = '/tmp/data'
-    PGP_HOME = f'{DATA_DIR}/gnupg'
-    PGP_NAME = 'FlaskBasic'
-    PGP_EMAIL = 'flaskbasic@localhost'
-    PGP_PASSPHRASE = 'ABcd1234'
+    GPG_HOME_DIR = f'{DATA_DIR}/gnupg'
+    GPG_SECRET_KEYRING = f'{DATA_DIR}/keyring'
+    GPG_NAME = 'FlaskBasic'
+    GPG_EMAIL = 'flaskbasic@localhost'
+    GPG_PASSPHRASE = 'ABcd1234'
 
 
 class ProductionConfig(Config):
@@ -43,7 +44,8 @@ class ProductionConfig(Config):
     MAIL_USE_SSL = enc == 'ssl'
 
     DATA_DIR = '/data'
-    PGP_HOME = f'{DATA_DIR}/gnupg'
+    GPG_HOME_DIR = f'{DATA_DIR}/gnupg'
+    GPG_SECRET_KEYRING = f'{DATA_DIR}/keyring'
 
     BLACKLIST = RedisBlacklist()
     # redis configuration to blacklist refresh tokens
@@ -59,6 +61,8 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:root@localhost:3306/flaskbasic?charset=utf8mb4'
     DEBUG = True
     MAIL_DEBUG = True
+    MAIL_SUPPRESS_SEND = True
+    RECAPTCHA_DISABLE = True
 
 
 class TestingConfig(Config):

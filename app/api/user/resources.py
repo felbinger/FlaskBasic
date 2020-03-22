@@ -4,6 +4,7 @@ from itsdangerous import (
     URLSafeTimedSerializer, SignatureExpired,
     BadTimeSignature, BadSignature
 )
+from typing import Union
 from marshmallow.exceptions import ValidationError
 from string import digits, ascii_letters
 from base64 import b32encode
@@ -28,7 +29,7 @@ def random_string(length=16):
 class UserResource(MethodView):
     @require_token
     @require_admin
-    def get(self, uuid, **_):
+    def get(self, uuid: str, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         if uuid is None:
             return ResultSchema(
                 data=[d.jsonify() for d in User.query.all()]
@@ -46,7 +47,7 @@ class UserResource(MethodView):
 
     @require_token
     @require_admin
-    def post(self, **_):
+    def post(self, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         """
         Create an new user account
         """
@@ -97,7 +98,7 @@ class UserResource(MethodView):
         ).jsonify()
 
     @require_token
-    def put(self, uuid, user, **_):
+    def put(self, uuid: str, user: User, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         """
         Modify an existing user account
         """
@@ -130,8 +131,7 @@ class UserResource(MethodView):
                     if val:
                         # generate a new secret
                         if not user.totp_enabled:
-                            user.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
-                            totp_secret = user.totp_secret
+                            totp_secret = user.totp_secret = b32encode(os.urandom(10)).decode('utf-8')
                     else:
                         # deactivate 2fa
                         if user.totp_enabled:
@@ -170,7 +170,7 @@ class UserResource(MethodView):
 
     @require_token
     @require_admin
-    def delete(self, uuid, **_):
+    def delete(self, uuid: str, **_: dict):
         """
         Delete an existing account (only with valid public_id not with 'me')
         """
@@ -187,7 +187,7 @@ class UserResource(MethodView):
             status_code=200
         ).jsonify()
 
-    def _update_user_as_admin(self, target, **_):
+    def _update_user_as_admin(self, target: User, **_: dict) -> Union[ResultSchema, ResultErrorSchema]:
         schema = DaoUpdateUserSchema()
         data = request.get_json() or {}
         try:
@@ -220,6 +220,15 @@ class UserResource(MethodView):
                         return ResultErrorSchema(
                             message='You are not allowed to enable 2FA.'
                         ).jsonify()
+            elif key == 'gpg_enabled':
+                if not val:
+                    if target.totp_enabled:
+                        target.gpg_enabled = False
+                else:
+                    if not target.totp_enabled:
+                        return ResultErrorSchema(
+                            message='You are not allowed to enable GPG.'
+                        ).jsonify()
             else:
                 setattr(target, key, val)
         db.session.commit()
@@ -228,7 +237,7 @@ class UserResource(MethodView):
 
 
 class VerificationResource(MethodView):
-    def put(self, token):
+    def put(self, token: str) -> Union[ResultSchema, ResultErrorSchema]:
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
         try:
             email = s.loads(token, salt='verify-email', max_age=7200)
@@ -246,7 +255,7 @@ class VerificationResource(MethodView):
 
 
 class ResetResource(MethodView):
-    def post(self):
+    def post(self) -> Union[ResultSchema, ResultErrorSchema]:
         """
         Request password reset
         """
@@ -278,7 +287,7 @@ class ResetResource(MethodView):
             status_code=200
         ).jsonify()
 
-    def put(self, token):
+    def put(self, token: str) -> Union[ResultSchema, ResultErrorSchema]:
         """
         Confirm password reset, by clicking the link in the email (html can't do put so it's the link of the view)
         """

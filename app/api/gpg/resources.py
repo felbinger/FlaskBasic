@@ -45,13 +45,17 @@ class GPGResource(MethodView):
                 errors=errors.messages
             ).jsonify()
 
-        if data['fingerprint'] not in [key.keyid for key in keyserver.search(user.email)]:
+        keys = list(filter(lambda k: not k.expired and k.keyid == data['fingerprint'], keyserver.search(user.email)))
+        if not keys:
             return ResultErrorSchema(
                 message="Invalid fingerprint!",
                 status_code=404
             ).jsonify()
 
-        user.gpg_fingerprint = data['fingerprint']
+        key = keys.pop()
+
+        user.gpg_fingerprint = key.keyid
+        user.gpg_public_key = key.key.encode()
 
         db.session.commit()
 

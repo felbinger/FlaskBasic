@@ -7,20 +7,21 @@ from hkp4py import KeyServer
 
 db = SQLAlchemy()
 
-keyserver = KeyServer("hkps://pgp.ext.selfnet.de")
+# TODO https
+keyserver = KeyServer("hkp://pool.sks-keyservers.net")
 
 gpg = GnuPG()
 
 
 class RedisBlacklist:
-    def __init__(self):
+    def __init__(self) -> "RedisBlacklist":
         self.blacklist = FlaskRedis()
 
-    def add(self, token):
+    def add(self, token: str):
         self.blacklist.sadd('blacklist', token)
         pass
 
-    def check(self, token):
+    def check(self, token: str) -> bool:
         return self.blacklist.smembers(token)
 
 
@@ -28,39 +29,30 @@ class SetBlacklist:
     def __init__(self):
         self.blacklist = set()
 
-    def add(self, token):
+    def add(self, token: str):
         self.blacklist.add(token)
 
-    def check(self, token):
+    def check(self, token: str) -> bool:
         return token in self.blacklist
 
 
-def send_mail(subject, recipient, content, force_gpg=False):
+def send_mail(subject: str, recipient: "User", content: str, force_gpg: bool=False):
     mail = Mail(current_app)
 
     # check if the email should be encrypted
-    if recipient.gpg_enabled or force_gpg:
-        fingerprints = list()
+    if recipient.gpg_enabled or force_gpg and recipient.gpg_public_key:
 
-        keys = keyserver.search(f'0x{recipient.gpg_fingerprint}', exact=True) if recipient.gpg_fingerprint else None
-        if keys and not keys[0].expired:
-            # gpg_fingerprint from db is ok
-            gpg.import_keys(keys[0].key)
-            fingerprints.append(recipient.gpg_fingerprint)
-        else:
-            # querying to get keys by email address
-            keys = list(filter(lambda k: not k.revoked, keyserver.search(recipient.email)))
-            for key in keys:
-                fingerprints.append(key.keyid)
-                gpg.import_keys(key.key)
+        x = gpg.import_keys(recipient.gpg_public_key)
 
         # encrypt the content of the email and replace new lines with html new line to beautify mail
         content = gpg.encrypt(
             data=content,
-            recipients=fingerprints,
+            recipients=[recipient.gpg_fingerprint],
             always_trust=True,
             sign=True,
             passphrase=current_app.config.get('PGP_PASSPHRASE')
         ).data.decode().replace("\n", "</br>")
+
+    # TODO content is encrypted, due to wrong mime type the client won't recognise as encrypted email
 
     mail.send_message(subject=subject, recipients=[recipient.email], html=content)

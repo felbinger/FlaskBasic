@@ -190,6 +190,9 @@
                                 <div class="col-md-6">
                                     {{ render_switch_field(forms['modifyAccount'].enable_2fa) }}
                                 </div>
+                                <div class="col-md-6">
+                                    {{ render_switch_field(forms['modifyAccount'].enable_gpg) }}
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -330,6 +333,10 @@
                 if (data['2fa']) {
                     console.log('trying to set 2fa to true')
                     $('#modifyAccount2FAEnabled').attr('checked', true);
+                }
+                if (data['gpg']) {
+                    console.log('trying to set gpg to true')
+                    $('#modifyAccountGPGEnabled').attr('checked', true);
                 }
                 $('#modalModifyAccount').modal('show');
                 $('#changePasswordPublicId').val(data['publicId']);

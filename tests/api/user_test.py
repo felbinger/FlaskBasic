@@ -190,6 +190,7 @@ def test_update_enable_2fa(app, client):
     # first step to enable 2fa, get secret key
     resp = client.put('/api/users/me', headers=headers, json={'totp_enabled': True})
     assert resp.status_code == 200
+    print(resp.data.decode())
     assert not json.loads(resp.data.decode()).get('data').get('2fa')
     assert '2fa_secret' in json.loads(resp.data.decode()).get('data')
     secret = json.loads(resp.data.decode()).get('data').get('2fa_secret')
