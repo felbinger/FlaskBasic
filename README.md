@@ -5,7 +5,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 * User Management
 * Profile Page
 * Account verification
-* 2-Factor Authentication (using totp)
+* Multi Factor Authentication (MFA) using tme based one time pad's (and gpg message decryption)
 * Password Reset (using email)
 * (GPG encrypted mails)
 
@@ -20,8 +20,8 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 * Features:
   * Messaging System
   * GPG (flask_gnupg) Encrypted Mails
-  * GPG (flask_gnupg) 2FA/3FA
-
+  * GPG (flask_gnupg) MFA
+* Improve profile page design (Image Upload: https://codepen.io/jeikuinu/pen/GBvgge)
 
 #### Environment Variables
 | Key                   | Description                                | Default              |
