@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer, LargeBinary
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app
 from uuid import uuid4
@@ -28,6 +28,7 @@ class User(db.Model):
 
     gpg_enabled = Column('gpg_enabled', Boolean, nullable=False, default=False)
     gpg_fingerprint = Column('gpg_fingerprint', String(128), nullable=True, default=None)
+    gpg_public_key = Column('gpg_public_key', LargeBinary, nullable=True)
 
     def __init__(self, *args, **kwargs):
         kwargs['_password'] = generate_password_hash(kwargs['password'], method='sha512')
