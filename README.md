@@ -7,7 +7,7 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
 * Account verification
 * Multi Factor Authentication (MFA) using tme based one time pad's (and gpg message decryption)
 * Password Reset (using email)
-* (GPG encrypted mails)
+* GPG encrypted mails
 
 ### TODO
 * Tests: Add missing test cases
@@ -15,10 +15,11 @@ This Project is using the Bootstrap admin theme [Startbootstrap SB Admin](https:
   * Password reset
   * Account verification
   * Profile Picture upload
-* GPG encrypted emails arrive incompleted
+* Documentation: Add missing api's to `app/static/swagger.json` + add Authentication (Tokens, Headers, ...)
+* GPG encrypted emails arrive incompleted -> Wrong content type
 * Update admin dashboard to partly js frontend
 * Features:
-  * Messaging System
+  * Messaging System (flask-socketio)
   * GPG (flask_gnupg) Encrypted Mails
   * GPG (flask_gnupg) MFA
 * Improve profile page design (Image Upload: https://codepen.io/jeikuinu/pen/GBvgge)

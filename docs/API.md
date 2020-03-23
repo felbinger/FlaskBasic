@@ -20,3 +20,4 @@ This message should only be used for debugging, not for conditions, you can use 
 
 * Access token's are passed into the Rest API via the `Authorisation` header.
 * Token's and password's are **case sensitive**.
+* The OpenAPI documentation is accessable at `/api/docs`

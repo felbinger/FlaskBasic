@@ -23,11 +23,11 @@ class DaoCreateUserSchema(Schema):
 
 
 class DaoUpdateUserSchema(Schema):
-    username = fields.Str(validate=[validate.Length(min=1, max=64)])
+    username = fields.Str(validate=[validate.Length(min=1, max=80)])
     displayName = fields.Str(validate=[validate.Length(min=0, max=128)])
     email = fields.Email([validate_spaces])
     password = fields.Str(validate=[validate.Length(min=8, max=200)])
-    role = fields.Str()
+    role = fields.Str(validate=[validate.Length(min=1, max=50)])
     totp_enabled = fields.Boolean()
     # token to deactivate 2fa
     totp_token = fields.Str(allow_none=True)

@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 
 from app.api import (
     AuthResource, UserResource, RoleResource,
@@ -32,37 +33,40 @@ def create_app(testing_config=None) -> Flask:
     register_models()
 
     # initialize gpg
-    #Path(app.config['GPG_HOME_DIR']).mkdir(parents=True, exist_ok=True)
-    #Path(app.config['GPG_SECRET_KEYRING']).mkdir(parents=True, exist_ok=True)
     gpg.init_app(app)
 
-    """
-    # check if there keyring contains at least one secret key
-    if not len(gpg.list_keys(secret=True)):
-        # import keys from keyfile.asc
-        if os.path.isfile(f"{app.config['DATA_DIR']}/keyfile.asc"):
-            with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'r') as f:
-                gpg.import_keys(f.read())
-        else:
-            # generate new key
-            data = {
-                'key_type': 'RSA',
-                'key_length': 4096,
-                'name_real': app.config.get('GPG_NAME'),
-                'name_email': app.config.get('GPG_EMAIL'),
-                'passphrase': app.config.get('GPG_PASSPHRASE')
-            }
-            key = gpg.gen_key(gpg.gen_key_input(**data))
+    # on development setup pgp, in productive done in wsgi_config to prevent gpg init running multiple times (4 workers)
+    if not testing_config and env == 'development':
+        # create pgp directories
+        Path(app.config['GPG_HOME_DIR']).mkdir(parents=True, exist_ok=True)
+        Path(app.config['GPG_SECRET_KEYRING']).mkdir(parents=True, exist_ok=True)
 
-            # export the new generated key pair to keyfile.asc
-            with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'w') as f:
-                f.write(gpg.export_keys(key.fingerprint))
-                f.write(gpg.export_keys(key.fingerprint, secret=True, passphrase=app.config.get('GPG_PASSPHRASE')))
-
-        # check again it the keyring contains at least one secret key
+        # check if there keyring contains at least one secret key
         if not len(gpg.list_keys(secret=True)):
-            print("WARNING: pgp functionality is limited")
-    """
+            # import keys from keyfile.asc
+            if os.path.isfile(f"{app.config['DATA_DIR']}/keyfile.asc"):
+                with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'r') as f:
+                    gpg.import_keys(f.read())
+            else:
+                # generate new key
+                data = {
+                    'key_type': 'RSA',
+                    'key_length': 4096,
+                    'name_real': app.config.get('GPG_NAME'),
+                    'name_email': app.config.get('GPG_EMAIL'),
+                    'passphrase': app.config.get('GPG_PASSPHRASE')
+                }
+                key = gpg.gen_key(gpg.gen_key_input(**data))
+
+                # export the new generated key pair to keyfile.asc
+                with open(f'{app.config["DATA_DIR"]}/keyfile.asc', 'w') as f:
+                    f.write(gpg.export_keys(key.fingerprint))
+                    f.write(
+                        gpg.export_keys(key.fingerprint, secret=True, passphrase=app.config.get('GPG_PASSPHRASE')))
+
+            # check again it the keyring contains at least one secret key
+            if not len(gpg.list_keys(secret=True)):
+                print("WARNING: pgp functionality is limited")
 
     # initialize redis blacklist
     if isinstance(app.config.get('BLACKLIST'), RedisBlacklist):
@@ -92,6 +96,19 @@ def create_app(testing_config=None) -> Flask:
     app.register_blueprint(default)
     app.register_blueprint(admin)
     app.register_blueprint(auth)
+
+    # register swagger ui view
+    app.register_blueprint(get_swaggerui_blueprint(
+        app.config['SWAGGER_URL'],
+        '/swagger.json',
+        config={
+            'app_name': "Flask Basic"
+        }
+    ), url_prefix=app.config['SWAGGER_URL'])
+
+    @app.route('/swagger.json')
+    def swagger_view():
+        return send_from_directory('static/', 'swagger.json')
 
     return app
 

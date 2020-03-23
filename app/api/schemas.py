@@ -32,7 +32,7 @@ class ResultErrorSchema:
 class ResultSchema:
     __slots__ = ['data', 'status_code']
 
-    def __init__(self, data: Union[str, dict] = None, status_code: int = 200):
+    def __init__(self, data: Union[str, list, dict] = None, status_code: int = 200):
         self.data = data
         self.status_code = status_code
 

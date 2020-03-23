@@ -45,7 +45,7 @@ class AuthResource(MethodView):
         # check if the account (email address) is verified
         if not user.verified:
             return AuthResultSchema(
-                message='Account not activated',
+                message='Account not verified',
                 status_code=401
             ).jsonify()
         # check if 2fa is enabled
@@ -162,7 +162,7 @@ class RefreshResource(MethodView):
                     status_code=401
                 ).jsonify()
         else:
-            return ResultErrorSchema(
-                message='Invalid refresh token',
-                status_code=401
+            return ResultSchema(
+                data='Successfully blacklisted token',
+                status_code=200
             ).jsonify()

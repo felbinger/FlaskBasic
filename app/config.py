@@ -21,6 +21,7 @@ class Config(object):
     GPG_NAME = 'FlaskBasic'
     GPG_EMAIL = 'flaskbasic@localhost'
     GPG_PASSPHRASE = 'ABcd1234'
+    SWAGGER_URL = '/api/docs'
 
 
 class ProductionConfig(Config):

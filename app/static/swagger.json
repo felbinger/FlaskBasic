@@ -1,0 +1,1108 @@
+{
+    "swagger": "2.0",
+    "basePath": "/api",
+    "info": {
+        "description": "FlaskBasic is a template for flask web applications You can find out more about FlaskBasic at [GitHub](https://github.com/felbinger/FlaskBasic).",
+        "version": "0.0.1",
+        "title": "FlaskBasic"
+    },
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "tags": [
+        {
+            "name": "authentication",
+            "description": "resource for authentication"
+        },
+        {
+            "name": "role",
+            "description": "resource for role management"
+        },
+        {
+            "name": "user",
+            "description": "resource for user management"
+        },
+        {
+            "name": "reset",
+            "description": "resource to reset password"
+        },
+
+        {
+            "name": "upload",
+            "description": "upload resource for profile picture uploads"
+        },
+    ],
+    "definitions": {
+        "CreateRole": {
+            "type": "object",
+            "required": [
+                "name",
+                "description"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "admin",
+                    "description": "unique key to identify role"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Administrator",
+                    "description": "text of the role for frontend"
+                }
+            }
+        },
+        "UpdateRole": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Administrator",
+                    "description": "text of the role for frontend"
+                }
+            }
+        },
+        "CreateUser": {
+            "type": "object",
+            "required": [
+                "username",
+                "email",
+                "password",
+                "role"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "jane",
+                    "description": "username which is required for login",
+                    "minimum": 1,
+                    "maximum": 80
+                },
+                "email": {
+                    "type": "string",
+                    "example": "jane@doe.com",
+                    "description": "email address of the user account, used for password reset"
+                },
+                "role": {
+                    "type": "string",
+                    "example": "user",
+                    "description": "role name of an existing role",
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                "password": {
+                    "type": "string",
+                    "example": "s3CrEt%p4$sw0rD",
+                    "description": "cleartext password",
+                    "minimum": 8,
+                    "maximum": 200
+                }
+            }
+        },
+        "UpdateUser": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "jane",
+                    "description": "username which is required for login",
+                    "minimum": 1,
+                    "maximum": 80
+                },
+                "displayName": {
+                    "type": "string",
+                    "example": "Jane Doe",
+                    "description": "name which will be displayed to other users, if not set username will be shown",
+                    "minimum": 0,
+                    "maximum": 128
+                },
+                "email": {
+                    "type": "string",
+                    "example": "jane@doe.com",
+                    "description": "email address of the user account, used for password reset"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "s3CrEt%p4$sw0rD",
+                    "description": "cleartext password",
+                    "minimum": 8,
+                    "maximum": 200
+                },
+                "role": {
+                    "type": "string",
+                    "description": "role name of an existing role",
+                    "minimum": 1,
+                    "maximum": 50
+                },
+                "totp_enabled": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "enable 2fa (currently only via totp)"
+                },
+                "totp_token": {
+                    "type": "string",
+                    "example": "516293",
+                    "description": "2fa token, only used to enable 2fa while setup"
+                },
+                "gpg_enable": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "enable gpg mail encryption"
+                }
+            }
+        },
+        "SelfUpdateUser": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "jane",
+                    "description": "username which is required for login",
+                    "minimum": 1,
+                    "maximum": 80
+                },
+                "displayName": {
+                    "type": "string",
+                    "example": "Jane Doe",
+                    "description": "name which will be displayed to other users, if not set username will be shown",
+                    "minimum": 0,
+                    "maximum": 128
+                },
+                "email": {
+                    "type": "string",
+                    "example": "jane@doe.com",
+                    "description": "email address of the user account, used for password reset"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "s3CrEt%p4$sw0rD",
+                    "description": "cleartext password",
+                    "minimum": 8,
+                    "maximum": 200
+                },
+                "totp_enabled": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "enable 2fa (currently only via totp)"
+                },
+                "totp_token": {
+                    "type": "string",
+                    "example": "",
+                    "description": "2fa token, only used to enable 2fa while setup"
+                },
+                "gpg_enable": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "enable gpg mail encryption"
+                }
+            }
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "publicId": {
+                    "type": "string",
+                    "example": "b9a29d8d-3c50-4a9f-a993-72ab467c7c82",
+                    "description": "public id in uuid4 format"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "jane",
+                    "description": "username which is required for login"
+                },
+                "displayName": {
+                    "type": "string",
+                    "example": "Jane Doe",
+                    "description": "name which will be displayed to other users, if not set username will be shown"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "jane@doe.com",
+                    "description": "email address of the user account, used for password reset"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "email verified, only accounts with required email address may login",
+                    "default": false
+                },
+                "created": {
+                    "type": "string",
+                    "example": "2020-01-01T07:25:30.45+01:00",
+                    "description": "timestamp of account creation",
+                    "default": "timestamp of database insertion"
+                },
+                "lastLogin": {
+                    "type": "string",
+                    "example": "2020-01-05T19:27:32.15+01:00",
+                    "description": "timestamp of last login"
+                },
+                "role": {
+                    "$ref": "#/definitions/Role",
+                    "description": "role of the account"
+                },
+                "2fa": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "two factor authentication enabled (currently only via totp)",
+                    "default": false
+                },
+                "gpg": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "gpg mail encryption enabled",
+                    "default": false
+                }
+            }
+        },
+        "Role": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "admin",
+                    "description": "unique key to identify role"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Administrator",
+                    "description": "text of the role for frontend"
+                }
+            }
+        },
+        "ResultErrorSchema": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "example": "[]",
+                    "description": "list with all occurred errors"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Something really bad happend...",
+                    "description": "description of the first error for the frontend"
+                }
+            }
+        },
+        "ResultSchema": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "example": "returns anything"
+                }
+            }
+        },
+        "AuthResultSchema": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOje1dOq4ODA5NTcsInVzZXJuYW1lIjoidXNlciJ9.PQeYdRJ4Wm6-KiqXtlnFTV4LGUWSfwddj-lJmCYCjoA"
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOJe1ODUwMDE2NTcsInVzZXJuYW1lIjoidXNlciJ9.oEOuzB05XETR6TuQEzV9OM2ZHgW01MxiMpJxJfbihf0"
+                },
+                "errors": {
+                    "type": "array",
+                    "example": [],
+                    "description": "list with all occurred errors"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Authentication was successful",
+                    "description": "description of the first error for the frontend"
+                }
+            }
+        },
+        "AuthSchema": {
+            "type": "object",
+            "required": [
+                "username",
+                "password"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "jane"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "s3CrEt%p4$sw0rD"
+                }
+            }
+        },
+        "RefreshSchema": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOJe1ODUwMDE2NTcsInVzZXJuYW1lIjoidXNlciJ9.oEOuzB05XETR6TuQEzV9OM2ZHgW01MxiMpJxJfbihf0"
+                }
+            }
+        },
+        "PasswordResetSchema": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "jane@doe.com"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+    },
+    "paths": {
+        "/auth": {
+            "get": {
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "get information of your own user",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    ,"401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "login",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "username and password for authentication",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AuthSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "$ref": "#/definitions/AuthResultSchema"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Invalid credentials, account not verified or missing 2fa token.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/AuthResultSchema"
+                                },
+                                {
+                                    "example": {
+                                        "access_token": "",
+                                        "refresh_token": "",
+                                        "errors": [],
+                                        "message": "Missing 2fa token"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "generate new access token using the refresh token",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "refresh token",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RefreshSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/AuthResultSchema"
+                                },
+                                {
+                                    "example": {
+                                        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOJe1ODUwMDE2NTcsInVzZXJuYW1lIjoidXNlciJ9.oEOuzB05XETR6TuQEzV9OM2ZHgW01MxiMpJxJfbihf0",
+                                        "refresh_token": "",
+                                        "errors": [],
+                                        "message": "Token refresh was successful"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Invalid refresh token.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultErrorSchema"
+                                },
+                                {
+                                    "example": {
+                                        "access_token": "",
+                                        "refresh_token": "",
+                                        "errors": [],
+                                        "message": "Invalid refresh token"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid payload or user doesn't exist anymore (could have been deleted in the meantime).",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultErrorSchema"
+                                },
+                                {
+                                    "example": {
+                                        "access_token": "",
+                                        "refresh_token": "",
+                                        "errors": [],
+                                        "message": "User does not exist!"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "logout",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultSchema"
+                                },
+                                {
+                                    "example": {
+                                        "data": "Successfully blacklist token"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultErrorSchema"
+                                },
+                                {
+                                    "example": {
+                                        "errors": [],
+                                        "message": "Invalid refresh token"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/roles": {
+            "get": {
+                "tags": [
+                    "role"
+                ],
+                "summary": "get all roles",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Role"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "role"
+                ],
+                "summary": "create a new role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "data for the role that should be created",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateRole"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "role has been created",
+                        "schema": {
+                            "$ref": "#/definitions/Role"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/roles/{roleName}": {
+            "get": {
+                "tags": [
+                    "role"
+                ],
+                "summary": "get the role with a specific role name",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "$ref": "#/definitions/Role"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "role"
+                ],
+                "summary": "update a role with a specific role name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "data for the role that should be updated",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpdateRole"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "$ref": "#/definitions/Role"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "role"
+                ],
+                "summary": "delete a role with a specific role name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultSchema"
+                                },
+                                {
+                                    "example": {
+                                        "data": "Missing access token!"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "get all users",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/User"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "create a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "data for the user that should be created",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "user has been created",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "put": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "update your user account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "data for the user that should be updated",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/SelfUpdateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "user has been created",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{publicId}": {
+            "get": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "get a user with a specific public id",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "update a user with a specific public id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "data for the user that should be updated",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpdateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "user has been created",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "delete a user with a specific public id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "401": {
+                        "description": "Unauthorized: Missing or invalid access token."
+                    },
+                    "403": {
+                        "description": "Forbidden: You need to have the role 'admin'."
+                    }
+                }
+            }
+        },
+        "/users/verify/{token}": {
+            "put": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "verify the email address of an user account",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "email has been verified",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultErrorSchema"
+                                },
+                                {
+                                    "example": {
+                                        "message": "E-Mail verfied successfully",
+                                        "errors": []
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Token is invalid, User does not exist.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                }
+            }
+        },
+        "/users/2fa": {
+            "get": {
+                "tags": [
+                    "user"
+                ]
+            },
+            "post": {
+                "tags": [
+                    "user"
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "user"
+                ]
+            }
+        },
+        "/users/gpg": {
+            "get": {
+                "tags": [
+                    "user"
+                ]
+            },
+            "post": {
+                "tags": [
+                    "user"
+                ]
+            },
+            "put": {
+                "tags": [
+                    "user"
+                ]
+            }
+        },
+        "/reset": {
+            "post": {
+                "tags": [
+                    "reset"
+                ],
+                "summary": "request password reset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "email of the user whose should be resetted",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PasswordResetSchema"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "password reset request has been send",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultErrorSchema"
+                                },
+                                {
+                                    "example": {
+                                        "errors": [],
+                                        "message": "Request has been send. Check your inbox!"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid Payload.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                }
+            }
+        },
+        "/reset/{token}": {
+            "put": {
+                "tags": [
+                    "reset"
+                ],
+                "summary": "confirm password reset",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "password reset request has been send",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ResultSchema"
+                                },
+                                {
+                                    "example": {
+                                        "data": {
+                                            "password": "NEW_PASSWORD"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Token is invalid, User does not exist.",
+                        "schema": {
+                            "$ref": "#/definitions/ResultErrorSchema"
+                        }
+                    },
+                }
+            }
+        },
+        "/upload": {}
+    }
+}

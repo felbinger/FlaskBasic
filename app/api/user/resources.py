@@ -248,6 +248,7 @@ class VerificationResource(MethodView):
         user = User.query.filter_by(email=email).first()
         user.verified = True
         db.session.commit()
+        # TODO why ResultErrorSchema -> ResultSchema
         return ResultErrorSchema(
             message='E-Mail verified successfully!',
             status_code=200
@@ -282,6 +283,7 @@ class ResetResource(MethodView):
 
             send_mail(subject="Password Recovery!", recipient=user, content=body)
 
+        # TODO why is ResultErrorSchema used here? -> ResultSchema
         return ResultErrorSchema(
             message='Request has been send. Check your inbox!',
             status_code=200

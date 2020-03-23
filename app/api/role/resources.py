@@ -107,7 +107,7 @@ class RoleResource(MethodView):
         if not role:
             return ResultErrorSchema(
                 message='Role does not exist!',
-                status_code=404
+                status_code=4
             ).jsonify()
         for user in User.query.all():
             if user.role == role:
