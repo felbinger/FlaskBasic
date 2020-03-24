@@ -23,6 +23,10 @@ def create_app(testing_config=None) -> Flask:
     if testing_config is None:
         if env == 'development':
             app.config.from_object(DevelopmentConfig)
+
+            # create pgp directories
+            Path(app.config['GPG_HOME_DIR']).mkdir(parents=True, exist_ok=True)
+            Path(app.config['GPG_SECRET_KEYRING']).mkdir(parents=True, exist_ok=True)
         else:
             app.config.from_object(ProductionConfig)
     else:
@@ -37,10 +41,6 @@ def create_app(testing_config=None) -> Flask:
 
     # on development setup pgp, in productive done in wsgi_config to prevent gpg init running multiple times (4 workers)
     if not testing_config and env == 'development':
-        # create pgp directories
-        Path(app.config['GPG_HOME_DIR']).mkdir(parents=True, exist_ok=True)
-        Path(app.config['GPG_SECRET_KEYRING']).mkdir(parents=True, exist_ok=True)
-
         # check if there keyring contains at least one secret key
         if not len(gpg.list_keys(secret=True)):
             # import keys from keyfile.asc
@@ -109,6 +109,11 @@ def create_app(testing_config=None) -> Flask:
     @app.route('/swagger.json')
     def swagger_view():
         return send_from_directory('static/', 'swagger.json')
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static'),
+                                   'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     return app
 
