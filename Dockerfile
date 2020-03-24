@@ -1,4 +1,5 @@
-FROM python:3.7-alpine
+ARG BASE_IMG=flaskbasic_base
+FROM ${BASE_IMG}
 
 ENV MYSQL_HOSTNAME=db
 ENV MYSQL_PORT=3306
@@ -9,13 +10,7 @@ ENV REDIS_PORT=6379
 ENV REDIS_DATABASE=0
 
 EXPOSE 80
-
 WORKDIR /app
-COPY requirements.txt /app/
-
-RUN apk add gcc musl-dev libffi-dev libressl-dev gnupg
-RUN pip install -r /app/requirements.txt
-
 COPY . /app
 
 
